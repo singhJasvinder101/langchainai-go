@@ -8,6 +8,7 @@ import (
 
 	"github.com/singhJasvinder101/ai-go/internal/llm"
 	"github.com/singhJasvinder101/ai-go/internal/llm/providers/gemini"
+	"github.com/singhJasvinder101/ai-go/internal/llm/providers/openai"
 )
 
 type ProviderFactory struct {
@@ -22,6 +23,7 @@ var (
 
 var providerConstructorMap = map[string]func(ctx context.Context) llm.Provider{
 	"gemini": initGeminiProvider,
+	"openai": initOpenAIProvider,
 }
 
 func NewProviderFactory(ctx context.Context) (*ProviderFactory, error) {
@@ -59,4 +61,8 @@ func (p *ProviderFactory) GetProviderByName(name string) (llm.Provider, error) {
 
 func initGeminiProvider(ctx context.Context) llm.Provider {
 	return gemini.NewGeminiProvider(ctx)
+}
+
+func initOpenAIProvider(ctx context.Context) llm.Provider {
+	return openai.NewOpenAIProvider(ctx)
 }
