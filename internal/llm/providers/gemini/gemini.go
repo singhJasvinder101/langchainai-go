@@ -46,7 +46,7 @@ func (p *GeminiProvider) Generate(ctx context.Context, req llm.RequestInterface)
 }
 
 func (p *GeminiProvider) GenerateStream(ctx context.Context, req llm.RequestInterface) (<-chan llm.ResponseInterface, <-chan error) {
-	responses := make(chan llm.ResponseInterface)
+	responses := make(chan llm.ResponseInterface, 100)
 	errs := make(chan error, 1)
 
 	geminiReq, ok := req.(*GenerateRequest)
