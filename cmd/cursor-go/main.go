@@ -31,11 +31,22 @@ func main() {
 
 	req := gemini.GenerateRequest{Prompt: "Why is the sky blue?"}
 
-	response, err := provider.Generate(ctx, &req)
-	if err != nil {
-		log.Fatal("failed to generate response: %w", err)
-		panic(err)
-	}
+	//response, err := provider.Generate(ctx, &req)
+	//if err != nil {
+	//	log.Fatal("failed to generate response: %w", err)
+	//	panic(err)
+	//}
 
-	fmt.Println(response.GetText())
+	//fmt.Println(response.GetText())
+
+	responses, errs := provider.GenerateStream(ctx, &req)
+	for response := range responses {
+		fmt.Print(response.GetText())
+	}
+	for err := range errs {
+		if err != nil {
+			log.Fatal("failed to generate stream response: %w", err)
+		}
+	}
+	fmt.Println()
 }

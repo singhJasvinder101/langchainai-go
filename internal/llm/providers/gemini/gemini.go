@@ -44,3 +44,43 @@ func (p *GeminiProvider) Generate(ctx context.Context, req llm.RequestInterface)
 	}
 	return &GenerateResponse{response}, nil
 }
+
+func (p *GeminiProvider) GenerateStream(ctx context.Context, req llm.RequestInterface) (<-chan llm.ResponseInterface, <-chan error) {
+	responses := make(chan llm.ResponseInterface)
+	errs := make(chan error, 1)
+
+	geminiReq, ok := req.(*GenerateRequest)
+	if !ok || geminiReq == nil {
+		errs <- fmt.Errorf("gemini: request must be a non-nil *gemini.GenerateRequest")
+		close(responses)
+		close(errs)
+		return responses, errs
+	}
+	if err := geminiReq.Validate(); err != nil {
+		errs <- err
+		close(responses)
+		close(errs)
+		return responses, errs
+	}
+
+	go func() {
+		defer close(responses)
+		defer close(errs)
+
+		model := config.GetString("gemini.model")
+		contents := []Content{{Role: "user", Parts: []Part{{Text: geminiReq.Prompt}}}}
+		for response, err := range p.Client.Models.GenerateContentStream(ctx, model, contents, nil) {
+			if err != nil {
+				errs <- err
+				return
+			}
+			responses <- &GenerateResponse{response}
+		}
+	}()
+
+	return responses, errs
+}
+
+func (p *GeminiProvider) Close() error {
+	return nil
+}
