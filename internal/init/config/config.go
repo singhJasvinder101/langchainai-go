@@ -5,7 +5,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/singhJasvinder101/cursor-go/internal/types"
+	"github.com/singhJasvinder101/ai-go/internal/types"
 	"gopkg.in/yaml.v3"
 )
 

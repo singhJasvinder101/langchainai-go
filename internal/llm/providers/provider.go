@@ -6,8 +6,8 @@ import (
 	"log"
 	"sync"
 
-	"github.com/singhJasvinder101/cursor-go/internal/llm"
-	"github.com/singhJasvinder101/cursor-go/internal/llm/providers/gemini"
+	"github.com/singhJasvinder101/ai-go/internal/llm"
+	"github.com/singhJasvinder101/ai-go/internal/llm/providers/gemini"
 )
 
 type ProviderFactory struct {

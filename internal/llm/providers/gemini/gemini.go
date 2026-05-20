@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/singhJasvinder101/cursor-go/internal/init/config"
-	"github.com/singhJasvinder101/cursor-go/internal/llm"
+	"github.com/singhJasvinder101/ai-go/internal/init/config"
+	"github.com/singhJasvinder101/ai-go/internal/llm"
 	"google.golang.org/genai"
 )
 

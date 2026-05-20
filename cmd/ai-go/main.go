@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/singhJasvinder101/cursor-go/internal/init/config"
-	"github.com/singhJasvinder101/cursor-go/internal/llm/providers"
-	"github.com/singhJasvinder101/cursor-go/internal/llm/providers/gemini"
+	"github.com/singhJasvinder101/ai-go/internal/init/config"
+	"github.com/singhJasvinder101/ai-go/internal/llm/providers"
+	"github.com/singhJasvinder101/ai-go/internal/llm/providers/gemini"
 )
 
 func main() {

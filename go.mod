@@ -1,4 +1,4 @@
-module github.com/singhJasvinder101/cursor-go
+module github.com/singhJasvinder101/ai-go
 
 go 1.25.1
 
