@@ -1,0 +1,7 @@
+gemini:
+  model: "gemini-2.5-flash"
+  api_key: "AIzaSyAiSyrysYjrhAdjNiTC1bIR-z6txTJFsdY"
+
+agent:
+  max_steps: 25
+  max_history_turns: 20
