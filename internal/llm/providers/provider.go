@@ -3,11 +3,13 @@ package providers
 import (
 	"context"
 	"fmt"
-	"log"
 	"sync"
 
+	"github.com/singhJasvinder101/ai-go/internal/constants"
 	"github.com/singhJasvinder101/ai-go/internal/llm"
+	"github.com/singhJasvinder101/ai-go/internal/llm/providers/claude"
 	"github.com/singhJasvinder101/ai-go/internal/llm/providers/gemini"
+	"github.com/singhJasvinder101/ai-go/internal/llm/providers/ollama"
 	"github.com/singhJasvinder101/ai-go/internal/llm/providers/openai"
 )
 
@@ -18,27 +20,24 @@ type ProviderFactory struct {
 var (
 	providerFactory *ProviderFactory
 	once            sync.Once
-	initializeErr   error
 )
 
 var providerConstructorMap = map[string]func(ctx context.Context) llm.Provider{
-	"gemini": initGeminiProvider,
-	"openai": initOpenAIProvider,
+	constants.ProviderGemini: initGeminiProvider,
+	constants.ProviderOpenAI: initOpenAIProvider,
+	constants.ProviderClaude: initClaudeProvider,
+	constants.ProviderOllama: initOllamaProvider,
 }
 
-func NewProviderFactory(ctx context.Context) (*ProviderFactory, error) {
+func NewProviderFactory(ctx context.Context) *ProviderFactory {
 	once.Do(func() {
-		providerFactory, initializeErr = initializeProviderFactory(ctx)
-		if initializeErr != nil {
-			log.Fatal("failed to initialize provider factory: %w", initializeErr)
-			panic(initializeErr)
-		}
+		providerFactory = initializeProviderFactory(ctx)
 	})
 
-	return providerFactory, nil
+	return providerFactory
 }
 
-func initializeProviderFactory(ctx context.Context) (*ProviderFactory, error) {
+func initializeProviderFactory(ctx context.Context) *ProviderFactory {
 	factory := &ProviderFactory{
 		providers: make(map[string]llm.Provider),
 	}
@@ -48,10 +47,10 @@ func initializeProviderFactory(ctx context.Context) (*ProviderFactory, error) {
 	}
 
 	providerFactory = factory
-	return factory, nil
+	return factory
 }
 
-func (p *ProviderFactory) GetProviderByName(name string) (llm.Provider, error) {
+func GetProviderByName(name string) (llm.Provider, error) {
 	provider, ok := providerFactory.providers[name]
 	if !ok {
 		return nil, fmt.Errorf("provider not found: %s", name)
@@ -65,4 +64,12 @@ func initGeminiProvider(ctx context.Context) llm.Provider {
 
 func initOpenAIProvider(ctx context.Context) llm.Provider {
 	return openai.NewOpenAIProvider(ctx)
+}
+
+func initClaudeProvider(ctx context.Context) llm.Provider {
+	return claude.NewClaudeProvider(ctx)
+}
+
+func initOllamaProvider(ctx context.Context) llm.Provider {
+	return ollama.NewOllamaProvider(ctx)
 }

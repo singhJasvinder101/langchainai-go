@@ -3,53 +3,48 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 
+	"github.com/singhJasvinder101/ai-go/internal/constants"
+	initializers "github.com/singhJasvinder101/ai-go/internal/init"
 	"github.com/singhJasvinder101/ai-go/internal/init/config"
 	"github.com/singhJasvinder101/ai-go/internal/llm"
 	"github.com/singhJasvinder101/ai-go/internal/llm/providers"
+	claudeprovider "github.com/singhJasvinder101/ai-go/internal/llm/providers/claude"
 	"github.com/singhJasvinder101/ai-go/internal/llm/providers/gemini"
+	ollamaprovider "github.com/singhJasvinder101/ai-go/internal/llm/providers/ollama"
 	openaiprovider "github.com/singhJasvinder101/ai-go/internal/llm/providers/openai"
+	"github.com/singhJasvinder101/ai-go/internal/pkg/log"
 )
 
 func main() {
-	//example to test
-	config.MustInit(config.DefaultConfigPath)
-
 	ctx := context.Background()
+	if err := initializers.Init(ctx, config.DefaultConfigPath); err != nil {
+		log.Fatal("failed to initialize application", "error", err)
+	}
 
-	providerName := config.GetString("llm.provider")
+	providerName := config.GetString(constants.ConfigLLMProvider)
 	if providerName == "" {
-		providerName = "gemini"
+		providerName = constants.ProviderGemini
 	}
 
-	providerFactory, err := providers.NewProviderFactory(ctx)
-	if err != nil {
-		log.Fatal("failed to create provider factory: %w", err)
-		panic(err)
-	}
+	providers.NewProviderFactory(ctx)
 
-	provider, err := providerFactory.GetProviderByName(providerName)
+	provider, err := providers.GetProviderByName(providerName)
 	if err != nil {
-		log.Fatal("failed to create provider: %w", err)
-		panic(err)
+		log.Fatal("failed to get provider", "error", err, "provider", providerName)
 	}
 
 	var req llm.RequestInterface
 	switch providerName {
-	case "openai":
+	case constants.ProviderOpenAI:
 		req = &openaiprovider.GenerateRequest{Prompt: "Why is the sky blue?"}
+	case constants.ProviderClaude:
+		req = &claudeprovider.GenerateRequest{Prompt: "Why is the sky blue?"}
+	case constants.ProviderOllama:
+		req = &ollamaprovider.GenerateRequest{Prompt: "Why is the sky blue?"}
 	default:
 		req = &gemini.GenerateRequest{Prompt: "Why is the sky blue?"}
 	}
-
-	//response, err := provider.Generate(ctx, &req)
-	//if err != nil {
-	//	log.Fatal("failed to generate response: %w", err)
-	//	panic(err)
-	//}
-
-	//fmt.Println(response.GetText())
 
 	responses, errs := provider.GenerateStream(ctx, req)
 	for response := range responses {
@@ -57,7 +52,7 @@ func main() {
 	}
 	for err := range errs {
 		if err != nil {
-			log.Fatal("failed to generate stream response: %w", err)
+			log.Fatal("failed to generate stream response", "error", err, "provider", providerName)
 		}
 	}
 	fmt.Println()

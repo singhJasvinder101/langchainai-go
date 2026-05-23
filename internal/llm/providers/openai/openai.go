@@ -52,20 +52,17 @@ func (p *OpenAIProvider) GenerateStream(ctx context.Context, req llm.RequestInte
 	openaiReq, ok := req.(*GenerateRequest)
 	if !ok || openaiReq == nil {
 		errs <- fmt.Errorf("openai: request must be a non-nil *openai.GenerateRequest")
-		close(responses)
-		close(errs)
+		closeChannels(responses, errs)
 		return responses, errs
 	}
 	if err := openaiReq.Validate(); err != nil {
 		errs <- err
-		close(responses)
-		close(errs)
+		closeChannels(responses, errs)
 		return responses, errs
 	}
 
 	go func() {
-		defer close(responses)
-		defer close(errs)
+		closeChannels(responses, errs)
 
 		stream, err := p.Client.CreateChatCompletionStream(ctx, openai.ChatCompletionRequest{
 			Model: config.GetString("openai.model"),
@@ -109,4 +106,9 @@ func (p *OpenAIProvider) GenerateStream(ctx context.Context, req llm.RequestInte
 
 func (p *OpenAIProvider) Close() error {
 	return nil
+}
+
+func closeChannels(responses chan llm.ResponseInterface, errs chan error) {
+	defer close(responses)
+	defer close(errs)
 }

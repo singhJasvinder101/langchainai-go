@@ -1,41 +1,50 @@
 package config
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"sync"
 
+	"github.com/singhJasvinder101/ai-go/internal/pkg/log"
 	"github.com/singhJasvinder101/ai-go/internal/types"
 	"gopkg.in/yaml.v3"
 )
 
 const DefaultConfigPath = "configs/config.yaml"
 
-var cfg *types.Config
-var once sync.Once
+var (
+	cfg  *types.Config
+	once sync.Once
+)
 
 func MustInit(path string) {
+	if len(path) == 0 {
+		path = DefaultConfigPath
+	}
 	once.Do(func() {
-		initConfig(path)
+		if err := initConfig(path); err != nil {
+			log.Fatal("config initialization failed", "error", err, "path", path)
+		}
 	})
 }
 
-func initConfig(path string) {
+func initConfig(path string) error {
 	if _, err := os.Stat(path); err != nil {
-		log.Fatalf("config file not found: %v", err)
+		return fmt.Errorf("config file not found: %w", err)
 	}
 
 	raw, err := os.ReadFile(path)
 	if err != nil {
-		log.Fatalf("failed to read config: %v", err)
+		return fmt.Errorf("read config: %w", err)
 	}
 
 	c := make(types.Config)
 	if err := yaml.Unmarshal(raw, &c); err != nil {
-		log.Fatalf("failed to parse config: %v", err)
+		return fmt.Errorf("parse config: %w", err)
 	}
 
 	cfg = &c
+	return nil
 }
 
 func GetConfig() *types.Config {
