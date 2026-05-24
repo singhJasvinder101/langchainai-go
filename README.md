@@ -74,7 +74,7 @@ import (
 	"fmt"
 	"log"
 
-	aigo "github.com/singhJasvinder101/ai-go/ai-go"
+	"github.com/singhJasvinder101/ai-go"
 	"github.com/singhJasvinder101/ai-go/internal/constants"
 	"github.com/singhJasvinder101/ai-go/internal/llm/providers/gemini"
 )
@@ -117,7 +117,7 @@ import (
 	"fmt"
 	"log"
 
-	aigo "github.com/singhJasvinder101/ai-go/ai-go"
+	"github.com/singhJasvinder101/ai-go"
 	"github.com/singhJasvinder101/ai-go/internal/constants"
 	"github.com/singhJasvinder101/ai-go/internal/llm/providers/openai"
 )

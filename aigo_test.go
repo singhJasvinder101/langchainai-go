@@ -12,7 +12,7 @@ import (
 
 func TestNew(t *testing.T) {
 	ctx := context.Background()
-	provider, err := New(ctx, constants.ProviderOllama, "../configs/config.yaml")
+	provider, err := New(ctx, constants.ProviderOllama, "configs/config.yaml")
 	if err != nil {
 		t.Fatalf("failed to create provider: %v", err)
 	}
@@ -25,7 +25,7 @@ func TestGeminiGenerate(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	provider, err := New(ctx, constants.ProviderGemini, "../configs/config.yaml")
+	provider, err := New(ctx, constants.ProviderGemini, "configs/config.yaml")
 	if err != nil {
 		t.Fatalf("failed to create provider: %v", err)
 	}
@@ -44,7 +44,7 @@ func TestOpenAIGenerate(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	provider, err := New(ctx, constants.ProviderOpenAI, "../configs/config.yaml")
+	provider, err := New(ctx, constants.ProviderOpenAI, "configs/config.yaml")
 	if err != nil {
 		t.Fatalf("failed to create provider: %v", err)
 	}
@@ -63,7 +63,7 @@ func TestOllamaGenerate(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	provider, err := New(ctx, constants.ProviderOllama, "../configs/config.yaml")
+	provider, err := New(ctx, constants.ProviderOllama, "configs/config.yaml")
 	if err != nil {
 		t.Fatalf("failed to create provider: %v", err)
 	}

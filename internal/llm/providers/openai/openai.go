@@ -105,6 +105,7 @@ func (p *OpenAIProvider) GenerateStream(ctx context.Context, req llm.RequestInte
 }
 
 func (p *OpenAIProvider) Close() error {
+	//TODO: Implement
 	return nil
 }
 

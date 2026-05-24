@@ -82,6 +82,7 @@ func (p *ClaudeProvider) GenerateStream(ctx context.Context, req llm.RequestInte
 }
 
 func (p *ClaudeProvider) Close() error {
+	//TODO: Implement
 	return nil
 }
 

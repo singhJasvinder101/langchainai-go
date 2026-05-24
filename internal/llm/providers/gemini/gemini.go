@@ -81,6 +81,7 @@ func (p *GeminiProvider) GenerateStream(ctx context.Context, req llm.RequestInte
 }
 
 func (p *GeminiProvider) Close() error {
+	//TODO: Implement
 	return nil
 }
 

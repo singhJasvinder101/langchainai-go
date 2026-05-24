@@ -93,6 +93,7 @@ func (p *OllamaProvider) GenerateStream(ctx context.Context, req llm.RequestInte
 }
 
 func (p *OllamaProvider) Close() error {
+	//TODO: Implement
 	return nil
 }
 
