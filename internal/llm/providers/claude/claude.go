@@ -14,7 +14,7 @@ type ClaudeProvider struct {
 	Client anthropic.Client
 }
 
-func NewClaudeProvider(_ context.Context) (*ClaudeProvider, ) {
+func NewClaudeProvider(_ context.Context) *ClaudeProvider {
 	return &ClaudeProvider{
 		Client: anthropic.NewClient(
 			option.WithAPIKey(config.GetString("claude.api_key")),
