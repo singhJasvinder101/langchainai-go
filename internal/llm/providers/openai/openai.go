@@ -62,7 +62,7 @@ func (p *OpenAIProvider) GenerateStream(ctx context.Context, req llm.RequestInte
 	}
 
 	go func() {
-		closeChannels(responses, errs)
+		defer closeChannels(responses, errs)
 
 		stream, err := p.Client.CreateChatCompletionStream(ctx, openai.ChatCompletionRequest{
 			Model: config.GetString("openai.model"),
