@@ -51,6 +51,10 @@ func initializeProviderFactory(ctx context.Context) *ProviderFactory {
 }
 
 func GetProviderByName(name string) (llm.Provider, error) {
+	if providerFactory == nil {
+		return nil, fmt.Errorf("provider factory is not initialized")
+	}
+
 	provider, ok := providerFactory.providers[name]
 	if !ok {
 		return nil, fmt.Errorf("provider not found: %s", name)
