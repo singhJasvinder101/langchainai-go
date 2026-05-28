@@ -7,7 +7,7 @@ import (
 
 	"github.com/ollama/ollama/api"
 	"github.com/singhJasvinder101/ai-go/internal/constants"
-	"github.com/singhJasvinder101/ai-go/internal/init/config"
+	"github.com/singhJasvinder101/ai-go/init/config"
 )
 
 func newAPIClient() (*api.Client, error) {

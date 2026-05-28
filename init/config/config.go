@@ -5,7 +5,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/singhJasvinder101/ai-go/internal/pkg/log"
+	"github.com/singhJasvinder101/ai-go/pkg/log"
 	"github.com/singhJasvinder101/ai-go/internal/types"
 	"gopkg.in/yaml.v3"
 )

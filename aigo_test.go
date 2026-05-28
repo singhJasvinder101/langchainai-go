@@ -8,6 +8,7 @@ import (
 	"github.com/singhJasvinder101/ai-go/internal/llm/providers/gemini"
 	"github.com/singhJasvinder101/ai-go/internal/llm/providers/ollama"
 	"github.com/singhJasvinder101/ai-go/internal/llm/providers/openai"
+	"github.com/singhJasvinder101/ai-go/internal/template"
 )
 
 func TestNew(t *testing.T) {
@@ -77,4 +78,44 @@ func TestOllamaGenerate(t *testing.T) {
 		t.Fatal("expected non-empty response from ollama")
 	}
 	t.Log(response.GetText())
+}
+
+
+func TestTemplate(t *testing.T) {
+	registry := template.NewRegistry()
+	err := registry.RegisterTemplate("summary", template.FormatterNative, "Summarize the following text: {{.Text}}")
+	if err != nil {
+		t.Fatalf("failed to register template: %v", err)
+	}
+	formatted, err := registry.Format("summary", map[string]any{"Text": "The quick brown fox jumps over the lazy dog."})
+	if err != nil {
+		t.Fatalf("failed to format template: %v", err)
+	}
+	t.Log(formatted)
+}
+
+func TestTemplateJinja(t *testing.T) {
+	registry := template.NewRegistry()
+	err := registry.RegisterTemplate("summary", template.FormatterJinja, "Summarize the following text: {{ text }}")
+	if err != nil {
+		t.Fatalf("failed to register template: %v", err)
+	}
+	formatted, err := registry.Format("summary", map[string]any{"text": "The quick brown fox jumps over the lazy dog."})
+	if err != nil {
+		t.Fatalf("failed to format template: %v", err)
+	}
+	t.Log(formatted)
+}
+
+func TestComplexNestedTemplate(t *testing.T) {
+	registry := template.NewRegistry()
+	err := registry.RegisterTemplate("summary", template.FormatterNative, "Summarize the following text: {{.Text}} {{.Nested.Text}}")
+	if err != nil {
+		t.Fatalf("failed to register template: %v", err)
+	}
+	formatted, err := registry.Format("summary", map[string]any{"Text": "The quick brown fox jumps over the lazy dog.", "Nested": map[string]any{"Text": "The quick brown fox jumps over the lazy dog."}})
+	if err != nil {
+		t.Fatalf("failed to format template: %v", err)
+	}
+	t.Log(formatted)
 }

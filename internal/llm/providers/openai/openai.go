@@ -7,7 +7,7 @@ import (
 	"io"
 
 	"github.com/sashabaranov/go-openai"
-	"github.com/singhJasvinder101/ai-go/internal/init/config"
+	"github.com/singhJasvinder101/ai-go/init/config"
 	"github.com/singhJasvinder101/ai-go/internal/llm"
 )
 

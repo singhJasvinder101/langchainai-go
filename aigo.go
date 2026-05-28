@@ -3,7 +3,7 @@ package aigo
 import (
 	"context"
 
-	initializers "github.com/singhJasvinder101/ai-go/internal/init"
+	initializers "github.com/singhJasvinder101/ai-go/init"
 	"github.com/singhJasvinder101/ai-go/internal/llm"
 	"github.com/singhJasvinder101/ai-go/internal/llm/providers"
 )

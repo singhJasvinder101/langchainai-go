@@ -5,9 +5,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/singhJasvinder101/ai-go/template/formatter"
-	"github.com/singhJasvinder101/ai-go/template/formatter/jinja"
-	"github.com/singhJasvinder101/ai-go/template/formatter/native"
+	"github.com/singhJasvinder101/ai-go/internal/template/formatter"
+	"github.com/singhJasvinder101/ai-go/internal/template/formatter/jinja"
+	"github.com/singhJasvinder101/ai-go/internal/template/formatter/native"
 )
 
 

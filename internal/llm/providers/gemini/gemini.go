@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/singhJasvinder101/ai-go/internal/init/config"
+	"github.com/singhJasvinder101/ai-go/init/config"
 	"github.com/singhJasvinder101/ai-go/internal/llm"
-	"github.com/singhJasvinder101/ai-go/internal/pkg/log"
+	"github.com/singhJasvinder101/ai-go/pkg/log"
 	"google.golang.org/genai"
 )
 
