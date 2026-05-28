@@ -1,5 +1,4 @@
-# Ai-GO
-[AiGO Documentation](https://deepwiki.com/singhJasvinder101/ai-go)
+# Langchainai-GO
 
 `ai-go` is a Go library that provides a unified, streamlined interface for interacting with various Large Language Model (LLM) providers. It abstracts away provider-specific SDKs, allowing you to switch between models from OpenAI, Google Gemini, Anthropic Claude, and local Ollama instances with minimal code changes.
 
