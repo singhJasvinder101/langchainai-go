@@ -18,3 +18,14 @@ func New(ctx context.Context, providerName string, configSrc string) (llm.Provid
 
 	return provider, nil
 }
+
+func NewEmbeddings(ctx context.Context, providerName string, configSrc string) (llm.EmbeddingProvider, error) {
+	initializers.Init(ctx, configSrc)
+
+	provider, err := providers.GetEmbeddingProviderByName(providerName)
+	if err != nil {
+		return nil, err
+	}
+
+	return provider, nil
+}

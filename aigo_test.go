@@ -2,6 +2,7 @@ package aigo
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/singhJasvinder101/ai-go/internal/constants"
@@ -80,7 +81,6 @@ func TestOllamaGenerate(t *testing.T) {
 	t.Log(response.GetText())
 }
 
-
 func TestTemplate(t *testing.T) {
 	registry := template.NewRegistry()
 	err := registry.RegisterTemplate("summary", template.FormatterNative, "Summarize the following text: {{.Text}}")
@@ -118,4 +118,67 @@ func TestComplexNestedTemplate(t *testing.T) {
 		t.Fatalf("failed to format template: %v", err)
 	}
 	t.Log(formatted)
+}
+
+
+func TestNewEmbeddingsWithoutDocuments(t *testing.T) {
+	ctx := context.Background()
+	provider, err := NewEmbeddings(ctx, constants.ProviderOllama, "configs/config.yaml")
+	if err != nil {
+		t.Fatalf("failed to create embeddings provider: %v", err)
+	}
+	defer provider.Close()
+
+	if provider == nil {
+		t.Fatal("expected non-nil embeddings provider")
+	}
+
+	_, err = provider.EmbedDocuments(ctx, nil)
+	if err == nil || !strings.Contains(err.Error(), "texts are required") {
+		t.Fatalf("expected documents validation error, got %v", err)
+	}
+
+	_, err = provider.EmbedQuery(ctx, "")
+	if err == nil || !strings.Contains(err.Error(), "text is required") {
+		t.Fatalf("expected query validation error, got %v", err)
+	}
+}
+
+func TestNewEmbeddingsWithDocuments(t *testing.T) {
+	ctx := context.Background()
+	provider, err := NewEmbeddings(ctx, constants.ProviderOllama, "configs/config.yaml")
+	if err != nil {
+		t.Fatalf("failed to create embeddings provider: %v", err)
+	}
+	defer provider.Close()
+
+	if provider == nil {
+		t.Fatal("expected non-nil embeddings provider")
+	}
+
+	embeddings, err := provider.EmbedDocuments(ctx, []string{"Hello, world!"})
+	if err != nil {
+		t.Fatalf("failed to embed documents: %v", err)
+	}
+
+	t.Log(embeddings)
+
+	query, err := provider.EmbedQuery(ctx, "Hello, world!")
+	if err != nil {
+		t.Fatalf("failed to embed query: %v", err)
+	}
+	
+	t.Log(query)
+}
+
+func TestNewEmbeddingsUnsupportedProvider(t *testing.T) {
+	ctx := context.Background()
+	provider, err := NewEmbeddings(ctx, constants.ProviderClaude, "configs/config.yaml")
+	if err == nil {
+		_ = provider.Close()
+		t.Fatal("expected error for unsupported embeddings provider")
+	}
+	if !strings.Contains(err.Error(), "does not support embeddings") {
+		t.Fatalf("expected unsupported embeddings error, got %v", err)
+	}
 }

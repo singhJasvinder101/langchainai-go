@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/ollama/ollama/api"
-	"github.com/singhJasvinder101/ai-go/internal/constants"
 	"github.com/singhJasvinder101/ai-go/init/config"
+	"github.com/singhJasvinder101/ai-go/internal/constants"
 	"github.com/singhJasvinder101/ai-go/internal/llm"
 	"github.com/singhJasvinder101/ai-go/pkg/log"
 )
@@ -92,6 +92,46 @@ func (p *OllamaProvider) GenerateStream(ctx context.Context, req llm.RequestInte
 	return responses, errs
 }
 
+func (p *OllamaProvider) EmbedDocuments(ctx context.Context, texts []string) ([][]float32, error) {
+	if len(texts) == 0 {
+		return nil, fmt.Errorf("ollama: texts are required")
+	}
+
+	embeddings := make([][]float32, 0, len(texts))
+	for i, text := range texts {
+		if text == "" {
+			return nil, fmt.Errorf("ollama: text at index %d is required", i)
+		}
+
+		response, err := p.client.Embeddings(ctx, &api.EmbeddingRequest{
+			Model:  embeddingModelName(),
+			Prompt: text,
+		})
+		if err != nil {
+			log.WithContext(ctx).Error("ollama embeddings failed", "error", err, "model", embeddingModelName())
+			return nil, err
+		}
+
+		embeddings = append(embeddings, float64ToFloat32(response.Embedding))
+	}
+	return embeddings, nil
+}
+
+func (p *OllamaProvider) EmbedQuery(ctx context.Context, text string) ([]float32, error) {
+	if text == "" {
+		return nil, fmt.Errorf("ollama: text is required")
+	}
+
+	embeddings, err := p.EmbedDocuments(ctx, []string{text})
+	if err != nil {
+		return nil, err
+	}
+	if len(embeddings) == 0 {
+		return nil, fmt.Errorf("ollama: embedding response was empty")
+	}
+	return embeddings[0], nil
+}
+
 func (p *OllamaProvider) Close() error {
 	//TODO: Implement
 	return nil
@@ -113,6 +153,22 @@ func modelName() string {
 		return constants.DefaultOllamaModel
 	}
 	return model
+}
+
+func embeddingModelName() string {
+	model := config.GetString(constants.ConfigOllamaEmbeddingModel)
+	if model == "" {
+		return modelName()
+	}
+	return model
+}
+
+func float64ToFloat32(values []float64) []float32 {
+	converted := make([]float32, len(values))
+	for i, value := range values {
+		converted[i] = float32(value)
+	}
+	return converted
 }
 
 func closeChannels(responses chan llm.ResponseInterface, errs chan error) {

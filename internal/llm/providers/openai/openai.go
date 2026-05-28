@@ -8,6 +8,7 @@ import (
 
 	"github.com/sashabaranov/go-openai"
 	"github.com/singhJasvinder101/ai-go/init/config"
+	"github.com/singhJasvinder101/ai-go/internal/constants"
 	"github.com/singhJasvinder101/ai-go/internal/llm"
 )
 
@@ -104,9 +105,59 @@ func (p *OpenAIProvider) GenerateStream(ctx context.Context, req llm.RequestInte
 	return responses, errs
 }
 
+func (p *OpenAIProvider) EmbedDocuments(ctx context.Context, texts []string) ([][]float32, error) {
+	if len(texts) == 0 {
+		return nil, fmt.Errorf("openai: texts are required")
+	}
+	for i, text := range texts {
+		if text == "" {
+			return nil, fmt.Errorf("openai: text at index %d is required", i)
+		}
+	}
+
+	response, err := p.Client.CreateEmbeddings(ctx, openai.EmbeddingRequestStrings{
+		Model: openai.EmbeddingModel(openAIEmbeddingModel()),
+		Input: texts,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	embeddings := make([][]float32, len(texts))
+	for _, item := range response.Data {
+		if item.Index >= 0 && item.Index < len(embeddings) {
+			embeddings[item.Index] = item.Embedding
+		}
+	}
+	return embeddings, nil
+}
+
+func (p *OpenAIProvider) EmbedQuery(ctx context.Context, text string) ([]float32, error) {
+	if text == "" {
+		return nil, fmt.Errorf("openai: text is required")
+	}
+
+	embeddings, err := p.EmbedDocuments(ctx, []string{text})
+	if err != nil {
+		return nil, err
+	}
+	if len(embeddings) == 0 {
+		return nil, fmt.Errorf("openai: embedding response was empty")
+	}
+	return embeddings[0], nil
+}
+
 func (p *OpenAIProvider) Close() error {
 	//TODO: Implement
 	return nil
+}
+
+func openAIEmbeddingModel() string {
+	model := config.GetString(constants.ConfigOpenAIEmbeddingModel)
+	if model == "" {
+		return constants.DefaultOpenAIEmbeddingModel
+	}
+	return model
 }
 
 func closeChannels(responses chan llm.ResponseInterface, errs chan error) {

@@ -8,6 +8,7 @@
 *   **Unified API:** A single `Provider` interface for all supported LLMs.
 *   **Multiple Providers:** Out-of-the-box support for Gemini, OpenAI, Claude, and Ollama.
 *   **Streaming Support:** A `GenerateStream` method for handling real-time, token-by-token responses.
+*   **Embeddings Support:** LangChain-style `EmbedDocuments` and `EmbedQuery` methods for providers that support embeddings.
 *   **Simple Configuration:** Centralized YAML-based configuration for API keys, models, and other settings.
 *   **Extensible Design:** The provider factory pattern makes it easy to add new LLM providers.
 
@@ -39,11 +40,13 @@ log:
 gemini:
   api_key: "YOUR_GEMINI_API_KEY"
   model: "gemini-pro"
+  embedding_model: "text-embedding-004"
 
 # openai provider settings
 openai:
   api_key: "YOUR_OPENAI_API_KEY"
   model: "gpt-4-turbo"
+  embedding_model: "text-embedding-3-small"
 
 # claude provider settings
 claude:
@@ -56,6 +59,7 @@ ollama:
   # base_url is optional and defaults to http://127.0.0.1:11434
   base_url: "http://127.0.0.1:11434"
   model: "llama3"
+  embedding_model: "nomic-embed-text"
 ```
 
 ## Usage
@@ -159,6 +163,50 @@ func main() {
 	fmt.Println()
 }
 ```
+
+### Embeddings
+
+Embeddings use a LangChain-style split between document embeddings and query embeddings.
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+
+	"github.com/singhJasvinder101/ai-go"
+	"github.com/singhJasvinder101/ai-go/internal/constants"
+)
+
+func main() {
+	ctx := context.Background()
+
+	embeddings, err := aigo.NewEmbeddings(ctx, constants.ProviderOpenAI, "path/to/your/config.yaml")
+	if err != nil {
+		log.Fatalf("failed to create embeddings provider: %v", err)
+	}
+	defer embeddings.Close()
+
+	docs, err := embeddings.EmbedDocuments(ctx, []string{
+		"Paris is the capital of France.",
+		"Berlin is the capital of Germany.",
+	})
+	if err != nil {
+		log.Fatalf("failed to embed documents: %v", err)
+	}
+
+	query, err := embeddings.EmbedQuery(ctx, "What is the capital of France?")
+	if err != nil {
+		log.Fatalf("failed to embed query: %v", err)
+	}
+
+	fmt.Println(len(docs), len(query))
+}
+```
+
+Embeddings are supported by Gemini, OpenAI, and Ollama.
 
 ## Supported Providers
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/singhJasvinder101/ai-go/init/config"
+	"github.com/singhJasvinder101/ai-go/internal/constants"
 	"github.com/singhJasvinder101/ai-go/internal/llm"
 	"github.com/singhJasvinder101/ai-go/pkg/log"
 	"google.golang.org/genai"
@@ -80,9 +81,79 @@ func (p *GeminiProvider) GenerateStream(ctx context.Context, req llm.RequestInte
 	return responses, errs
 }
 
+func (p *GeminiProvider) EmbedDocuments(ctx context.Context, texts []string) ([][]float32, error) {
+	if len(texts) == 0 {
+		return nil, fmt.Errorf("gemini: texts are required")
+	}
+
+	contents := make([]*genai.Content, 0, len(texts))
+	for _, text := range texts {
+		if text == "" {
+			return nil, fmt.Errorf("gemini: text at index %d is required", len(contents))
+		}
+		contents = append(contents, genai.NewContentFromText(text, genai.RoleUser))
+	}
+
+	response, err := p.Client.Models.EmbedContent(ctx, geminiEmbeddingModel(), contents, &genai.EmbedContentConfig{
+		TaskType: "RETRIEVAL_DOCUMENT",
+	})
+	if err != nil {
+		log.WithContext(ctx).Error("gemini embed documents failed", "error", err, "model", geminiEmbeddingModel())
+		return nil, err
+	}
+
+	return geminiEmbeddings(response)
+}
+
+func (p *GeminiProvider) EmbedQuery(ctx context.Context, text string) ([]float32, error) {
+	if text == "" {
+		return nil, fmt.Errorf("gemini: text is required")
+	}
+
+	response, err := p.Client.Models.EmbedContent(ctx, geminiEmbeddingModel(), genai.Text(text), &genai.EmbedContentConfig{
+		TaskType: "RETRIEVAL_QUERY",
+	})
+	if err != nil {
+		log.WithContext(ctx).Error("gemini embed query failed", "error", err, "model", geminiEmbeddingModel())
+		return nil, err
+	}
+
+	embeddings, err := geminiEmbeddings(response)
+	if err != nil {
+		return nil, err
+	}
+	if len(embeddings) == 0 {
+		return nil, fmt.Errorf("gemini: embedding response was empty")
+	}
+	return embeddings[0], nil
+}
+
 func (p *GeminiProvider) Close() error {
 	//TODO: Implement
 	return nil
+}
+
+func geminiEmbeddingModel() string {
+	model := config.GetString(constants.ConfigGeminiEmbeddingModel)
+	if model == "" {
+		return constants.DefaultGeminiEmbeddingModel
+	}
+	return model
+}
+
+func geminiEmbeddings(response *genai.EmbedContentResponse) ([][]float32, error) {
+	if response == nil {
+		return nil, fmt.Errorf("gemini: embedding response was nil")
+	}
+
+	embeddings := make([][]float32, len(response.Embeddings))
+	for i, embedding := range response.Embeddings {
+		if embedding == nil {
+			return nil, fmt.Errorf("gemini: embedding at index %d was nil", i)
+		}
+		embeddings[i] = embedding.Values
+	}
+	return embeddings, nil
 }
 
 func closeChannels(responses chan llm.ResponseInterface, errs chan error) {

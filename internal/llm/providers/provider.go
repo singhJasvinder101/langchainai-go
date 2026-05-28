@@ -62,6 +62,19 @@ func GetProviderByName(name string) (llm.Provider, error) {
 	return provider, nil
 }
 
+func GetEmbeddingProviderByName(name string) (llm.EmbeddingProvider, error) {
+	provider, err := GetProviderByName(name)
+	if err != nil {
+		return nil, err
+	}
+
+	embeddingProvider, ok := provider.(llm.EmbeddingProvider)
+	if !ok {
+		return nil, fmt.Errorf("provider does not support embeddings: %s", name)
+	}
+	return embeddingProvider, nil
+}
+
 func initGeminiProvider(ctx context.Context) llm.Provider {
 	return gemini.NewGeminiProvider(ctx)
 }

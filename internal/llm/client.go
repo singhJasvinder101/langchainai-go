@@ -16,3 +16,9 @@ type Provider interface {
 	GenerateStream(ctx context.Context, request RequestInterface) (responses <-chan ResponseInterface, errs <-chan error)
 	Close() error
 }
+
+type EmbeddingProvider interface {
+	EmbedDocuments(ctx context.Context, texts []string) ([][]float32, error)
+	EmbedQuery(ctx context.Context, text string) ([]float32, error)
+	Close() error
+}
