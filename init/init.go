@@ -3,9 +3,9 @@ package initializers
 import (
 	"context"
 
-	"github.com/singhJasvinder101/ai-go/init/config"
-	"github.com/singhJasvinder101/ai-go/internal/llm/providers"
-	"github.com/singhJasvinder101/ai-go/pkg/log"
+	"github.com/singhJasvinder101/langchainai-go/init/config"
+	"github.com/singhJasvinder101/langchainai-go/internal/llm/providers"
+	"github.com/singhJasvinder101/langchainai-go/pkg/log"
 )
 
 func Init(ctx context.Context, configSrc string) error {

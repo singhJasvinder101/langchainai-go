@@ -4,16 +4,16 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/singhJasvinder101/ai-go/internal/constants"
-	initializers "github.com/singhJasvinder101/ai-go/init"
-	"github.com/singhJasvinder101/ai-go/init/config"
-	"github.com/singhJasvinder101/ai-go/internal/llm"
-	"github.com/singhJasvinder101/ai-go/internal/llm/providers"
-	claudeprovider "github.com/singhJasvinder101/ai-go/internal/llm/providers/claude"
-	"github.com/singhJasvinder101/ai-go/internal/llm/providers/gemini"
-	ollamaprovider "github.com/singhJasvinder101/ai-go/internal/llm/providers/ollama"
-	openaiprovider "github.com/singhJasvinder101/ai-go/internal/llm/providers/openai"
-	"github.com/singhJasvinder101/ai-go/pkg/log"
+	"github.com/singhJasvinder101/langchainai-go/internal/constants"
+	initializers "github.com/singhJasvinder101/langchainai-go/init"
+	"github.com/singhJasvinder101/langchainai-go/init/config"
+	"github.com/singhJasvinder101/langchainai-go/internal/llm"
+	"github.com/singhJasvinder101/langchainai-go/internal/llm/providers"
+	claudeprovider "github.com/singhJasvinder101/langchainai-go/internal/llm/providers/claude"
+	"github.com/singhJasvinder101/langchainai-go/internal/llm/providers/gemini"
+	ollamaprovider "github.com/singhJasvinder101/langchainai-go/internal/llm/providers/ollama"
+	openaiprovider "github.com/singhJasvinder101/langchainai-go/internal/llm/providers/openai"
+	"github.com/singhJasvinder101/langchainai-go/pkg/log"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-module github.com/singhJasvinder101/ai-go
+module github.com/singhJasvinder101/langchainai-go
 
 go 1.26.0
 

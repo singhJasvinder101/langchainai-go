@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/singhJasvinder101/ai-go/init/config"
-	"github.com/singhJasvinder101/ai-go/internal/constants"
-	"github.com/singhJasvinder101/ai-go/internal/llm"
-	"github.com/singhJasvinder101/ai-go/pkg/log"
+	"github.com/singhJasvinder101/langchainai-go/init/config"
+	"github.com/singhJasvinder101/langchainai-go/internal/constants"
+	"github.com/singhJasvinder101/langchainai-go/internal/llm"
+	"github.com/singhJasvinder101/langchainai-go/pkg/log"
 	"google.golang.org/genai"
 )
 

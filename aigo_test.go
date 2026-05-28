@@ -5,11 +5,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/singhJasvinder101/ai-go/internal/constants"
-	"github.com/singhJasvinder101/ai-go/internal/llm/providers/gemini"
-	"github.com/singhJasvinder101/ai-go/internal/llm/providers/ollama"
-	"github.com/singhJasvinder101/ai-go/internal/llm/providers/openai"
-	"github.com/singhJasvinder101/ai-go/internal/template"
+	"github.com/singhJasvinder101/langchainai-go/internal/constants"
+	"github.com/singhJasvinder101/langchainai-go/internal/llm/providers/gemini"
+	"github.com/singhJasvinder101/langchainai-go/internal/llm/providers/ollama"
+	"github.com/singhJasvinder101/langchainai-go/internal/llm/providers/openai"
+	"github.com/singhJasvinder101/langchainai-go/internal/template"
 )
 
 func TestNew(t *testing.T) {

@@ -1,6 +1,6 @@
-# Langchainai-GO
+# langchainai-go
 
-`ai-go` is a Go library that provides a unified, streamlined interface for interacting with various Large Language Model (LLM) providers. It abstracts away provider-specific SDKs, allowing you to switch between models from OpenAI, Google Gemini, Anthropic Claude, and local Ollama instances with minimal code changes.
+`langchainai-go` is a Go library that provides a unified, streamlined interface for interacting with various Large Language Model (LLM) providers. It abstracts away provider-specific SDKs, allowing you to switch between models from OpenAI, Google Gemini, Anthropic Claude, and local Ollama instances with minimal code changes.
 
 ## Features
 
@@ -14,7 +14,7 @@
 ## Installation
 
 ```bash
-go get github.com/singhJasvinder101/ai-go
+go get github.com/singhJasvinder101/langchainai-go
 ```
 
 ## Configuration
@@ -38,32 +38,33 @@ log:
 # gemini provider settings
 gemini:
   api_key: "YOUR_GEMINI_API_KEY"
-  model: "gemini-pro"
-  embedding_model: "text-embedding-004"
+  model: gemini-2.5-flash
+  embedding_model: gemini-embedding-2
 
 # openai provider settings
 openai:
   api_key: "YOUR_OPENAI_API_KEY"
-  model: "gpt-4-turbo"
-  embedding_model: "text-embedding-3-small"
+  model: gpt-4o-mini
+  embedding_model: text-embedding-3-small
 
 # claude provider settings
 claude:
   api_key: "YOUR_CLAUDE_API_KEY"
-  model: "claude-3-opus-20240229"
+  model: claude-sonnet-4-20250514
+  embedding_model: voyage-3.5
   max_tokens: 1024
 
 # ollama provider settings
 ollama:
   # base_url is optional and defaults to http://127.0.0.1:11434
-  base_url: "http://127.0.0.1:11434"
-  model: "llama3"
-  embedding_model: "nomic-embed-text"
+  base_url: http://127.0.0.1:11434
+  model: smollm:135m
+  embedding_model: all-minilm
 ```
 
 ## Usage
 
-You can use `ai-go` for both single, blocking generation and for streaming responses.
+You can use `langchainai-go` for both single, blocking generation and for streaming responses.
 
 ### Basic Generation
 
@@ -77,9 +78,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/singhJasvinder101/ai-go"
-	"github.com/singhJasvinder101/ai-go/internal/constants"
-	"github.com/singhJasvinder101/ai-go/internal/llm/providers/gemini"
+	"github.com/singhJasvinder101/langchainai-go"
+	"github.com/singhJasvinder101/langchainai-go/internal/constants"
+	"github.com/singhJasvinder101/langchainai-go/internal/llm/providers/gemini"
 )
 
 func main() {
@@ -120,9 +121,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/singhJasvinder101/ai-go"
-	"github.com/singhJasvinder101/ai-go/internal/constants"
-	"github.com/singhJasvinder101/ai-go/internal/llm/providers/openai"
+	"github.com/singhJasvinder101/langchainai-go"
+	"github.com/singhJasvinder101/langchainai-go/internal/constants"
+	"github.com/singhJasvinder101/langchainai-go/internal/llm/providers/openai"
 )
 
 func main() {
@@ -175,8 +176,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/singhJasvinder101/ai-go"
-	"github.com/singhJasvinder101/ai-go/internal/constants"
+	"github.com/singhJasvinder101/langchainai-go"
+	"github.com/singhJasvinder101/langchainai-go/internal/constants"
 )
 
 func main() {
@@ -216,11 +217,11 @@ Embeddings are supported by Gemini, OpenAI, and Ollama.
 
 ## Example CLI
 
-This repository includes a simple command-line application in `cmd/ai-go` that demonstrates the streaming API. After configuring your `config.yaml`, you can run it directly.
+This repository includes a simple command-line application in `cmd/langchainai-go` that demonstrates the streaming API. After configuring your `config.yaml`, you can run it directly.
 
 ```bash
 # Ensure your configs/config.yaml is present and configured
-go run ./cmd/ai-go
+go run ./cmd/langchainai-go
 ```
 
 ## TODO (Future Support):

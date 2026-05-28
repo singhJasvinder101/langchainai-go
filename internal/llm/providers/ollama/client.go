@@ -6,8 +6,8 @@ import (
 	"net/url"
 
 	"github.com/ollama/ollama/api"
-	"github.com/singhJasvinder101/ai-go/internal/constants"
-	"github.com/singhJasvinder101/ai-go/init/config"
+	"github.com/singhJasvinder101/langchainai-go/internal/constants"
+	"github.com/singhJasvinder101/langchainai-go/init/config"
 )
 
 func newAPIClient() (*api.Client, error) {
