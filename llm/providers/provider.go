@@ -13,8 +13,14 @@ import (
 	"github.com/singhJasvinder101/langchainai-go/llm/providers/openai"
 )
 
+type providerRegistration struct {
+	constructor        func(ctx context.Context) llm.Provider
+	supportsEmbeddings bool
+}
+
 type ProviderFactory struct {
-	providers map[string]llm.Provider
+	providers          map[string]llm.Provider
+	embeddingProviders map[string]llm.EmbeddingProvider
 }
 
 var (
@@ -22,11 +28,11 @@ var (
 	once            sync.Once
 )
 
-var providerConstructorMap = map[string]func(ctx context.Context) llm.Provider{
-	constants.ProviderGemini: initGeminiProvider,
-	constants.ProviderOpenAI: initOpenAIProvider,
-	constants.ProviderClaude: initClaudeProvider,
-	constants.ProviderOllama: initOllamaProvider,
+var providerRegistry = map[string]providerRegistration{
+	constants.ProviderGemini: {constructor: initGeminiProvider, supportsEmbeddings: true},
+	constants.ProviderOpenAI: {constructor: initOpenAIProvider, supportsEmbeddings: true},
+	constants.ProviderClaude: {constructor: initClaudeProvider, supportsEmbeddings: false},
+	constants.ProviderOllama: {constructor: initOllamaProvider, supportsEmbeddings: true},
 }
 
 func NewProviderFactory(ctx context.Context) *ProviderFactory {
@@ -39,29 +45,43 @@ func NewProviderFactory(ctx context.Context) *ProviderFactory {
 
 func initializeProviderFactory(ctx context.Context) *ProviderFactory {
 	factory := &ProviderFactory{
-		providers: make(map[string]llm.Provider),
+		providers:          make(map[string]llm.Provider),
+		embeddingProviders: make(map[string]llm.EmbeddingProvider),
 	}
 
-	for providerType, constructor := range providerConstructorMap {
-		factory.providers[providerType] = constructor(ctx)
+	for providerType, registration := range providerRegistry {
+		provider := registration.constructor(ctx)
+		factory.providers[providerType] = provider
+
+		if registration.supportsEmbeddings {
+			embeddingProvider, ok := provider.(llm.EmbeddingProvider)
+			if !ok {
+				panic(fmt.Sprintf("provider %q is marked embedding-capable but does not implement llm.EmbeddingProvider", providerType))
+			}
+			factory.embeddingProviders[providerType] = embeddingProvider
+		}
 	}
 
 	providerFactory = factory
 	return factory
 }
+
 func GetEmbeddingProviderByName(name string) (llm.EmbeddingProvider, error) {
-	provider, err := GetProviderByName(name)
-	if err != nil {
-		return nil, err
+	if providerFactory == nil {
+		return nil, fmt.Errorf("provider factory is not initialized")
 	}
 
-	embeddingProvider, ok := provider.(llm.EmbeddingProvider)
-	if !ok {
+	embeddingProvider, ok := providerFactory.embeddingProviders[name]
+	if ok {
+		return embeddingProvider, nil
+	}
+
+	if _, exists := providerFactory.providers[name]; exists {
 		return nil, fmt.Errorf("provider does not support embeddings: %s", name)
 	}
-	return embeddingProvider, nil
-}
 
+	return nil, fmt.Errorf("embedding provider not found: %s", name)
+}
 
 func GetProviderByName(name string) (llm.Provider, error) {
 	if providerFactory == nil {
