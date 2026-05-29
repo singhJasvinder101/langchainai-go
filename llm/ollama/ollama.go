@@ -16,12 +16,13 @@ type OllamaProvider struct {
 	client *api.Client
 }
 
-func NewOllamaProvider(ctx context.Context) *OllamaProvider {
+func New(ctx context.Context) (*OllamaProvider, error) {
 	client, err := newAPIClient()
 	if err != nil {
-		log.WithContext(ctx).Fatal("failed to create ollama client", "error", err)
+		log.WithContext(ctx).Error("failed to create ollama client", "error", err)
+		return nil, err
 	}
-	return &OllamaProvider{client: client}
+	return &OllamaProvider{client: client}, nil
 }
 
 func (p *OllamaProvider) Generate(ctx context.Context, req llm.RequestInterface) (llm.ResponseInterface, error) {

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/singhJasvinder101/langchainai-go/init/config"
-	"github.com/singhJasvinder101/langchainai-go/llm/providers"
 	"github.com/singhJasvinder101/langchainai-go/pkg/log"
 )
 
@@ -21,9 +20,5 @@ func Init(ctx context.Context, configSrc string) {
 		Format: config.GetString("log.format"),
 	})
 	log.WithContext(ctx).Info("log reconfiguration complete")
-
-	log.WithContext(ctx).Info("initializing provider factory")
-	providers.NewProviderFactory(ctx)
-	log.WithContext(ctx).Info("provider factory initialization complete")
 
 }

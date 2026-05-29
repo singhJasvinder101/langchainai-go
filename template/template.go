@@ -82,6 +82,10 @@ func (r *Registry) RegisterTemplate(key string, engineName TemplateEngine, promp
 		return ErrEmptyTemplate
 	}
 
+	if _, ok := r.templates[key]; ok {
+		return fmt.Errorf("%w: %s", ErrTemplateAlreadyExists, key)
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -131,21 +135,12 @@ func (r *Registry) FormatTemplate(promptTemplate PromptTemplate, variables map[s
 		return "", ErrNilTemplate
 	}
 
-	if strings.TrimSpace(promptTemplate.Prompt) == "" {
-		return "", ErrEmptyTemplate
-	}
-
-	formatterName := promptTemplate.Engine.Normalize()
-	if formatterName == "" {
-		return "", ErrEmptyFormatter
-	}
-
 	r.mu.RLock()
-	templateRenderer, ok := r.engines[formatterName]
+	templateRenderer, ok := r.engines[promptTemplate.Engine]
 	r.mu.RUnlock()
 	
 	if !ok {
-		return "", fmt.Errorf("%w: %s", ErrFormatterNotFound, formatterName)
+		return "", fmt.Errorf("%w: %s", ErrFormatterNotFound, promptTemplate.Engine)
 	}
 
 	formatted, err := templateRenderer.Render(promptTemplate.Prompt, variables)

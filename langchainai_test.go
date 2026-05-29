@@ -6,28 +6,17 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/singhJasvinder101/langchainai-go/constants"
 	"github.com/singhJasvinder101/langchainai-go/init/config"
-	"github.com/singhJasvinder101/langchainai-go/llm/providers"
-	"github.com/singhJasvinder101/langchainai-go/llm/providers/gemini"
-	"github.com/singhJasvinder101/langchainai-go/llm/providers/ollama"
-	"github.com/singhJasvinder101/langchainai-go/llm/providers/openai"
+	"github.com/singhJasvinder101/langchainai-go/llm/claude"
+	"github.com/singhJasvinder101/langchainai-go/llm/gemini"
+	"github.com/singhJasvinder101/langchainai-go/llm/ollama"
+	"github.com/singhJasvinder101/langchainai-go/llm/openai"
 	"github.com/singhJasvinder101/langchainai-go/template"
 )
 
 func TestMain(m *testing.M) {
 	config.MustInit(config.DefaultConfigPath)
-	providers.NewProviderFactory(context.Background())
 	os.Exit(m.Run())
-}
-
-func TestNew(t *testing.T) {
-	ctx := context.Background()
-	provider, err := New(ctx, constants.ProviderOllama)
-	if err != nil {
-		t.Fatalf("failed to create provider: %v", err)
-	}
-	defer provider.Close()
 }
 
 func TestGeminiGenerate(t *testing.T) {
@@ -36,13 +25,13 @@ func TestGeminiGenerate(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	provider, err := New(ctx, constants.ProviderGemini)
-	if err != nil {
-		t.Fatalf("failed to create provider: %v", err)
-	}
-	defer provider.Close()
 
-	response, err := provider.Generate(ctx, &gemini.GenerateRequest{Prompt: "Hello, how are you?"})
+	geminiProvider, err := gemini.New(ctx)
+	if err != nil {
+		t.Fatalf("failed to create gemini provider: %v", err)
+	}
+
+	response, err := geminiProvider.Generate(ctx, &gemini.GenerateRequest{Prompt: "Hello, how are you?"})
 	if err != nil {
 		t.Fatalf("failed to generate response: %v", err)
 	}
@@ -55,7 +44,7 @@ func TestOpenAIGenerate(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	provider, err := New(ctx, constants.ProviderOpenAI)
+	provider, err := openai.New()
 	if err != nil {
 		t.Fatalf("failed to create provider: %v", err)
 	}
@@ -74,7 +63,7 @@ func TestOllamaGenerate(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	provider, err := New(ctx, constants.ProviderOllama)
+	provider, err := ollama.New(ctx)
 	if err != nil {
 		t.Fatalf("failed to create provider: %v", err)
 	}
@@ -129,10 +118,9 @@ func TestComplexNestedTemplate(t *testing.T) {
 	t.Log(formatted)
 }
 
-
 func TestNewEmbeddingsWithoutDocuments(t *testing.T) {
 	ctx := context.Background()
-	provider, err := NewEmbeddings(ctx, constants.ProviderOllama)
+	provider, err := ollama.New(ctx)
 	if err != nil {
 		t.Fatalf("failed to create embeddings provider: %v", err)
 	}
@@ -155,7 +143,7 @@ func TestNewEmbeddingsWithoutDocuments(t *testing.T) {
 
 func TestNewEmbeddingsWithDocuments(t *testing.T) {
 	ctx := context.Background()
-	provider, err := NewEmbeddings(ctx, constants.ProviderOllama)
+	provider, err := ollama.New(ctx)
 	if err != nil {
 		t.Fatalf("failed to create embeddings provider: %v", err)
 	}
@@ -176,13 +164,12 @@ func TestNewEmbeddingsWithDocuments(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to embed query: %v", err)
 	}
-	
+
 	t.Log(query)
 }
 
 func TestNewEmbeddingsUnsupportedProvider(t *testing.T) {
-	ctx := context.Background()
-	provider, err := NewEmbeddings(ctx, constants.ProviderClaude)
+	provider, err := claude.New()
 	if err == nil {
 		_ = provider.Close()
 		t.Fatal("expected error for unsupported embeddings provider")

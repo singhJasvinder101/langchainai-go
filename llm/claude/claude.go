@@ -8,18 +8,19 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/singhJasvinder101/langchainai-go/init/config"
 	"github.com/singhJasvinder101/langchainai-go/llm"
+	"github.com/singhJasvinder101/langchainai-go/pkg/log"
 )
 
 type ClaudeProvider struct {
 	Client anthropic.Client
 }
 
-func NewClaudeProvider(_ context.Context) *ClaudeProvider {
+func New() (*ClaudeProvider, error) {
 	return &ClaudeProvider{
 		Client: anthropic.NewClient(
 			option.WithAPIKey(config.GetString("claude.api_key")),
 		),
-	}
+	}, nil
 }
 
 func (p *ClaudeProvider) Generate(ctx context.Context, req llm.RequestInterface) (llm.ResponseInterface, error) {
@@ -28,6 +29,7 @@ func (p *ClaudeProvider) Generate(ctx context.Context, req llm.RequestInterface)
 		return nil, fmt.Errorf("claude: request must be a non-nil *claude.GenerateRequest")
 	}
 	if err := claudeReq.Validate(); err != nil {
+		log.WithContext(ctx).Error("invalid claude generate request", "error", err)
 		return nil, err
 	}
 

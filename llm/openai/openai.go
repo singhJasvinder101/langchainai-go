@@ -16,10 +16,10 @@ type OpenAIProvider struct {
 	Client *openai.Client
 }
 
-func NewOpenAIProvider(_ context.Context) *OpenAIProvider {
+func New() (*OpenAIProvider, error) {
 	return &OpenAIProvider{
 		Client: openai.NewClient(config.GetString("openai.api_key")),
-	}
+	}, nil
 }
 
 func (p *OpenAIProvider) Generate(ctx context.Context, req llm.RequestInterface) (llm.ResponseInterface, error) {
