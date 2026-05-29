@@ -6,12 +6,16 @@ import (
 	"strings"
 	"testing"
 
+	ollamaEmbedder "github.com/singhJasvinder101/langchainai-go/embedder/ollama"
+	geminiEmbedder "github.com/singhJasvinder101/langchainai-go/embedder/gemini"
 	"github.com/singhJasvinder101/langchainai-go/init/config"
-	"github.com/singhJasvinder101/langchainai-go/llm/claude"
 	"github.com/singhJasvinder101/langchainai-go/llm/gemini"
-	"github.com/singhJasvinder101/langchainai-go/llm/ollama"
-	"github.com/singhJasvinder101/langchainai-go/llm/openai"
+	ollamallm "github.com/singhJasvinder101/langchainai-go/llm/ollama"
+	openaillm "github.com/singhJasvinder101/langchainai-go/llm/openai"
 	"github.com/singhJasvinder101/langchainai-go/template"
+	"github.com/singhJasvinder101/langchainai-go/vectorstore"
+	"github.com/singhJasvinder101/langchainai-go/vectorstore/chroma"
+	"github.com/singhJasvinder101/langchainai-go/vectorstore/memory"
 )
 
 func TestMain(m *testing.M) {
@@ -44,13 +48,12 @@ func TestOpenAIGenerate(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	provider, err := openai.New()
+	provider, err := openaillm.New()
 	if err != nil {
 		t.Fatalf("failed to create provider: %v", err)
 	}
-	defer provider.Close()
 
-	response, err := provider.Generate(ctx, &openai.GenerateRequest{Prompt: "Hello, how are you?"})
+	response, err := provider.Generate(ctx, &openaillm.GenerateRequest{Prompt: "Hello, how are you?"})
 	if err != nil {
 		t.Fatalf("failed to generate response: %v", err)
 	}
@@ -63,13 +66,12 @@ func TestOllamaGenerate(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	provider, err := ollama.New(ctx)
+	provider, err := ollamallm.New(ctx)
 	if err != nil {
 		t.Fatalf("failed to create provider: %v", err)
 	}
-	defer provider.Close()
 
-	response, err := provider.Generate(ctx, &ollama.GenerateRequest{Prompt: "Say hello in one short sentence."})
+	response, err := provider.Generate(ctx, &ollamallm.GenerateRequest{Prompt: "Say hello in one short sentence."})
 	if err != nil {
 		t.Skipf("ollama generate failed (is ollama running?): %v", err)
 	}
@@ -118,49 +120,39 @@ func TestComplexNestedTemplate(t *testing.T) {
 	t.Log(formatted)
 }
 
-func TestNewEmbeddingsWithoutDocuments(t *testing.T) {
+func TestEmbedderWithoutDocuments(t *testing.T) {
 	ctx := context.Background()
-	provider, err := ollama.New(ctx)
+	emb, err := ollamaEmbedder.New(ctx)
 	if err != nil {
-		t.Fatalf("failed to create embeddings provider: %v", err)
-	}
-	defer provider.Close()
-
-	if provider == nil {
-		t.Fatal("expected non-nil embeddings provider")
+		t.Fatalf("failed to create embedder: %v", err)
 	}
 
-	_, err = provider.EmbedDocuments(ctx, nil)
+	_, err = emb.EmbedDocuments(ctx, nil)
 	if err == nil || !strings.Contains(err.Error(), "texts are required") {
 		t.Fatalf("expected documents validation error, got %v", err)
 	}
 
-	_, err = provider.EmbedQuery(ctx, "")
+	_, err = emb.EmbedQuery(ctx, "")
 	if err == nil || !strings.Contains(err.Error(), "text is required") {
 		t.Fatalf("expected query validation error, got %v", err)
 	}
 }
 
-func TestNewEmbeddingsWithDocuments(t *testing.T) {
+func TestEmbedderWithDocuments(t *testing.T) {
 	ctx := context.Background()
-	provider, err := ollama.New(ctx)
+	emb, err := ollamaEmbedder.New(ctx)
 	if err != nil {
-		t.Fatalf("failed to create embeddings provider: %v", err)
-	}
-	defer provider.Close()
-
-	if provider == nil {
-		t.Fatal("expected non-nil embeddings provider")
+		t.Fatalf("failed to create embedder: %v", err)
 	}
 
-	embeddings, err := provider.EmbedDocuments(ctx, []string{"Hello, world!"})
+	embeddings, err := emb.EmbedDocuments(ctx, []string{"Hello, world!"})
 	if err != nil {
 		t.Fatalf("failed to embed documents: %v", err)
 	}
 
 	t.Log(embeddings)
 
-	query, err := provider.EmbedQuery(ctx, "Hello, world!")
+	query, err := emb.EmbedQuery(ctx, "Hello, world!")
 	if err != nil {
 		t.Fatalf("failed to embed query: %v", err)
 	}
@@ -168,13 +160,64 @@ func TestNewEmbeddingsWithDocuments(t *testing.T) {
 	t.Log(query)
 }
 
-func TestNewEmbeddingsUnsupportedProvider(t *testing.T) {
-	provider, err := claude.New()
-	if err == nil {
-		_ = provider.Close()
-		t.Fatal("expected error for unsupported embeddings provider")
+func TestMemoryVectorStoreWithEmbedder(t *testing.T) {
+	ctx := context.Background()
+	emb, err := ollamaEmbedder.New(ctx)
+	if err != nil {
+		t.Fatalf("failed to create embedder: %v", err)
 	}
-	if !strings.Contains(err.Error(), "does not support embeddings") {
-		t.Fatalf("expected unsupported embeddings error, got %v", err)
+
+	store, err := memory.New(emb)
+	if err != nil {
+		t.Fatalf("failed to create vector store: %v", err)
 	}
+
+	err = store.AddDocuments(ctx, []vectorstore.Document{
+		{ID: "france", Content: "Paris is the capital of France."},
+		{ID: "germany", Content: "Berlin is the capital of Germany."},
+	})
+	if err != nil {
+		t.Skipf("add documents failed (is ollama running?): %v", err)
+	}
+
+	results, err := store.SimilaritySearch(ctx, "What is the capital of France?", 1)
+	if err != nil {
+		t.Fatalf("similarity search failed: %v", err)
+	}
+	if len(results) == 0 {
+		t.Fatal("expected at least one search result")
+	}
+	t.Log(results[0].Document.Content, results[0].Score)
+}
+
+func TestChromaVectorStoreWithEmbedder(t *testing.T) {
+	ctx := context.Background()
+	emb, err := geminiEmbedder.New(ctx)
+	if err != nil {
+		t.Fatalf("failed to create embedder: %v", err)
+	}
+
+	store, err := chroma.New(ctx, emb, chroma.Options{
+		Collection: t.Name(),
+	})
+	if err != nil {
+		t.Fatalf("failed to create vector store: %v", err)
+	}
+
+	err = store.AddDocuments(ctx, []vectorstore.Document{
+		{ID: "france", Content: "Paris is the capital of France."},
+		{ID: "germany", Content: "Berlin is the capital of Germany."},
+	})
+	if err != nil {
+		t.Skipf("add documents failed (is ollama running?): %v", err)
+	}
+
+	results, err := store.SimilaritySearch(ctx, "What is the capital of France?", 1)
+	if err != nil {
+		t.Fatalf("similarity search failed: %v", err)
+	}
+	if len(results) == 0 {
+		t.Fatal("expected at least one search result")
+	}
+	t.Log(results[0].Document.Content, results[0].Score)
 }
