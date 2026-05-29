@@ -1,15 +1,15 @@
-package aigo
+package langchainaiGo
 
 import (
 	"context"
 	"strings"
 	"testing"
 
-	"github.com/singhJasvinder101/langchainai-go/internal/constants"
-	"github.com/singhJasvinder101/langchainai-go/internal/llm/providers/gemini"
-	"github.com/singhJasvinder101/langchainai-go/internal/llm/providers/ollama"
-	"github.com/singhJasvinder101/langchainai-go/internal/llm/providers/openai"
-	"github.com/singhJasvinder101/langchainai-go/internal/template"
+	"github.com/singhJasvinder101/langchainai-go/constants"
+	"github.com/singhJasvinder101/langchainai-go/llm/providers/gemini"
+	"github.com/singhJasvinder101/langchainai-go/llm/providers/ollama"
+	"github.com/singhJasvinder101/langchainai-go/llm/providers/openai"
+	"github.com/singhJasvinder101/langchainai-go/template"
 )
 
 func TestNew(t *testing.T) {

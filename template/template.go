@@ -5,9 +5,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/singhJasvinder101/langchainai-go/internal/template/formatter"
-	"github.com/singhJasvinder101/langchainai-go/internal/template/formatter/jinja"
-	"github.com/singhJasvinder101/langchainai-go/internal/template/formatter/native"
+	"github.com/singhJasvinder101/langchainai-go/template/formatter"
+	"github.com/singhJasvinder101/langchainai-go/template/formatter/jinja"
+	"github.com/singhJasvinder101/langchainai-go/template/formatter/native"
 )
 
 

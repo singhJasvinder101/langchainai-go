@@ -1,11 +1,11 @@
-package aigo
+package langchainaiGo
 
 import (
 	"context"
 
 	initializers "github.com/singhJasvinder101/langchainai-go/init"
-	"github.com/singhJasvinder101/langchainai-go/internal/llm"
-	"github.com/singhJasvinder101/langchainai-go/internal/llm/providers"
+	"github.com/singhJasvinder101/langchainai-go/llm"
+	"github.com/singhJasvinder101/langchainai-go/llm/providers"
 )
 
 func New(ctx context.Context, providerName string, configSrc string) (llm.Provider, error) {

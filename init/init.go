@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/singhJasvinder101/langchainai-go/init/config"
-	"github.com/singhJasvinder101/langchainai-go/internal/llm/providers"
+	"github.com/singhJasvinder101/langchainai-go/llm/providers"
 	"github.com/singhJasvinder101/langchainai-go/pkg/log"
 )
 

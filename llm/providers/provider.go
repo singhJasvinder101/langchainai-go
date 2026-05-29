@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/singhJasvinder101/langchainai-go/internal/constants"
-	"github.com/singhJasvinder101/langchainai-go/internal/llm"
-	"github.com/singhJasvinder101/langchainai-go/internal/llm/providers/claude"
-	"github.com/singhJasvinder101/langchainai-go/internal/llm/providers/gemini"
-	"github.com/singhJasvinder101/langchainai-go/internal/llm/providers/ollama"
-	"github.com/singhJasvinder101/langchainai-go/internal/llm/providers/openai"
+	"github.com/singhJasvinder101/langchainai-go/constants"
+	"github.com/singhJasvinder101/langchainai-go/llm"
+	"github.com/singhJasvinder101/langchainai-go/llm/providers/claude"
+	"github.com/singhJasvinder101/langchainai-go/llm/providers/gemini"
+	"github.com/singhJasvinder101/langchainai-go/llm/providers/ollama"
+	"github.com/singhJasvinder101/langchainai-go/llm/providers/openai"
 )
 
 type ProviderFactory struct {

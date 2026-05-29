@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/singhJasvinder101/langchainai-go/init/config"
-	"github.com/singhJasvinder101/langchainai-go/internal/constants"
-	"github.com/singhJasvinder101/langchainai-go/internal/llm"
+	internalConstants "github.com/singhJasvinder101/langchainai-go/internal/constants"
+	"github.com/singhJasvinder101/langchainai-go/llm"
 	"github.com/singhJasvinder101/langchainai-go/pkg/log"
 	"google.golang.org/genai"
 )
@@ -134,9 +134,9 @@ func (p *GeminiProvider) Close() error {
 }
 
 func geminiEmbeddingModel() string {
-	model := config.GetString(constants.ConfigGeminiEmbeddingModel)
+	model := config.GetString(internalConstants.ConfigGeminiEmbeddingModel)
 	if model == "" {
-		return constants.DefaultGeminiEmbeddingModel
+		return internalConstants.DefaultGeminiEmbeddingModel
 	}
 	return model
 }

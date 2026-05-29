@@ -4,16 +4,17 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/singhJasvinder101/langchainai-go/internal/constants"
+	"github.com/singhJasvinder101/langchainai-go/constants"
 	initializers "github.com/singhJasvinder101/langchainai-go/init"
 	"github.com/singhJasvinder101/langchainai-go/init/config"
-	"github.com/singhJasvinder101/langchainai-go/internal/llm"
-	"github.com/singhJasvinder101/langchainai-go/internal/llm/providers"
-	claudeprovider "github.com/singhJasvinder101/langchainai-go/internal/llm/providers/claude"
-	"github.com/singhJasvinder101/langchainai-go/internal/llm/providers/gemini"
-	ollamaprovider "github.com/singhJasvinder101/langchainai-go/internal/llm/providers/ollama"
-	openaiprovider "github.com/singhJasvinder101/langchainai-go/internal/llm/providers/openai"
+	"github.com/singhJasvinder101/langchainai-go/llm"
+	"github.com/singhJasvinder101/langchainai-go/llm/providers"
+	claudeprovider "github.com/singhJasvinder101/langchainai-go/llm/providers/claude"
+	"github.com/singhJasvinder101/langchainai-go/llm/providers/gemini"
+	ollamaprovider "github.com/singhJasvinder101/langchainai-go/llm/providers/ollama"
+	openaiprovider "github.com/singhJasvinder101/langchainai-go/llm/providers/openai"
 	"github.com/singhJasvinder101/langchainai-go/pkg/log"
+	internalConstants "github.com/singhJasvinder101/langchainai-go/internal/constants"
 )
 
 func main() {
@@ -22,7 +23,7 @@ func main() {
 		log.Fatal("failed to initialize application", "error", err)
 	}
 
-	providerName := config.GetString(constants.ConfigLLMProvider)
+	providerName := config.GetString(internalConstants.ConfigLLMProvider)
 	if providerName == "" {
 		providerName = constants.ProviderGemini
 	}

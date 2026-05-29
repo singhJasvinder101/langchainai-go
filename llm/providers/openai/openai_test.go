@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	goopenai "github.com/sashabaranov/go-openai"
-	"github.com/singhJasvinder101/langchainai-go/internal/llm"
+	"github.com/singhJasvinder101/langchainai-go/llm"
 )
 
 func TestOpenAIProviderImplementsEmbeddingProvider(t *testing.T) {

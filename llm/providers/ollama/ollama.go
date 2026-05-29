@@ -8,7 +8,7 @@ import (
 	"github.com/ollama/ollama/api"
 	"github.com/singhJasvinder101/langchainai-go/init/config"
 	"github.com/singhJasvinder101/langchainai-go/internal/constants"
-	"github.com/singhJasvinder101/langchainai-go/internal/llm"
+	"github.com/singhJasvinder101/langchainai-go/llm"
 	"github.com/singhJasvinder101/langchainai-go/pkg/log"
 )
 
