@@ -2,15 +2,24 @@ package langchainaiGo
 
 import (
 	"context"
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/singhJasvinder101/langchainai-go/constants"
+	"github.com/singhJasvinder101/langchainai-go/init/config"
+	"github.com/singhJasvinder101/langchainai-go/llm/providers"
 	"github.com/singhJasvinder101/langchainai-go/llm/providers/gemini"
 	"github.com/singhJasvinder101/langchainai-go/llm/providers/ollama"
 	"github.com/singhJasvinder101/langchainai-go/llm/providers/openai"
 	"github.com/singhJasvinder101/langchainai-go/template"
 )
+
+func TestMain(m *testing.M) {
+	config.MustInit(config.DefaultConfigPath)
+	providers.NewProviderFactory(context.Background())
+	os.Exit(m.Run())
+}
 
 func TestNew(t *testing.T) {
 	ctx := context.Background()
