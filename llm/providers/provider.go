@@ -49,19 +49,6 @@ func initializeProviderFactory(ctx context.Context) *ProviderFactory {
 	providerFactory = factory
 	return factory
 }
-
-func GetProviderByName(name string) (llm.Provider, error) {
-	if providerFactory == nil {
-		return nil, fmt.Errorf("provider factory is not initialized")
-	}
-
-	provider, ok := providerFactory.providers[name]
-	if !ok {
-		return nil, fmt.Errorf("provider not found: %s", name)
-	}
-	return provider, nil
-}
-
 func GetEmbeddingProviderByName(name string) (llm.EmbeddingProvider, error) {
 	provider, err := GetProviderByName(name)
 	if err != nil {
@@ -73,6 +60,19 @@ func GetEmbeddingProviderByName(name string) (llm.EmbeddingProvider, error) {
 		return nil, fmt.Errorf("provider does not support embeddings: %s", name)
 	}
 	return embeddingProvider, nil
+}
+
+
+func GetProviderByName(name string) (llm.Provider, error) {
+	if providerFactory == nil {
+		return nil, fmt.Errorf("provider factory is not initialized")
+	}
+
+	provider, ok := providerFactory.providers[name]
+	if !ok {
+		return nil, fmt.Errorf("provider not found: %s", name)
+	}
+	return provider, nil
 }
 
 func initGeminiProvider(ctx context.Context) llm.Provider {
