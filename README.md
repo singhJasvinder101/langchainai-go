@@ -78,17 +78,20 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/singhJasvinder101/langchainai-go"
+	langchainaiGO "github.com/singhJasvinder101/langchainai-go"
 	"github.com/singhJasvinder101/langchainai-go/internal/constants"
 	"github.com/singhJasvinder101/langchainai-go/internal/llm/providers/gemini"
+	initializers "github.com/singhJasvinder101/langchainai-go/init"
 )
 
 func main() {
 	ctx := context.Background()
 
+	initializers.Init(ctx, "path/to/your/config.yaml")
+
 	// Initialize a new provider from your config file.
 	// The provider name must match a configured provider (e.g., "gemini").
-	provider, err := aigo.New(ctx, constants.ProviderGemini, "path/to/your/config.yaml")
+	provider, err := langchainaiGO.New(ctx, constants.ProviderGemini)
 	if err != nil {
 		log.Fatalf("failed to create provider: %v", err)
 	}
@@ -121,14 +124,18 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/singhJasvinder101/langchainai-go"
+	langchainaiGO "github.com/singhJasvinder101/langchainai-go"
 	"github.com/singhJasvinder101/langchainai-go/internal/constants"
 	"github.com/singhJasvinder101/langchainai-go/internal/llm/providers/openai"
+	initializers "github.com/singhJasvinder101/langchainai-go/init"
 )
 
 func main() {
 	ctx := context.Background()
-	provider, err := aigo.New(ctx, constants.ProviderOpenAI, "path/to/your/config.yaml")
+
+	initializers.Init(ctx, "path/to/your/config.yaml")
+
+	provider, err := langchainaiGO.New(ctx, constants.ProviderOpenAI)
 	if err != nil {
 		log.Fatalf("Failed to initialize provider: %v", err)
 	}
@@ -176,14 +183,17 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/singhJasvinder101/langchainai-go"
+	langchainaiGO "github.com/singhJasvinder101/langchainai-go"
 	"github.com/singhJasvinder101/langchainai-go/internal/constants"
+	initializers "github.com/singhJasvinder101/langchainai-go/init"
 )
 
 func main() {
 	ctx := context.Background()
 
-	embeddings, err := aigo.NewEmbeddings(ctx, constants.ProviderOpenAI, "path/to/your/config.yaml")
+	initializers.Init(ctx, "path/to/your/config.yaml")
+
+	embeddings, err := langchainaiGO.NewEmbeddings(ctx, constants.ProviderOpenAI)
 	if err != nil {
 		log.Fatalf("failed to create embeddings provider: %v", err)
 	}

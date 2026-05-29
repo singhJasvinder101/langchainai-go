@@ -14,7 +14,7 @@ import (
 
 func TestNew(t *testing.T) {
 	ctx := context.Background()
-	provider, err := New(ctx, constants.ProviderOllama, "configs/config.yaml")
+	provider, err := New(ctx, constants.ProviderOllama)
 	if err != nil {
 		t.Fatalf("failed to create provider: %v", err)
 	}
@@ -27,7 +27,7 @@ func TestGeminiGenerate(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	provider, err := New(ctx, constants.ProviderGemini, "configs/config.yaml")
+	provider, err := New(ctx, constants.ProviderGemini)
 	if err != nil {
 		t.Fatalf("failed to create provider: %v", err)
 	}
@@ -46,7 +46,7 @@ func TestOpenAIGenerate(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	provider, err := New(ctx, constants.ProviderOpenAI, "configs/config.yaml")
+	provider, err := New(ctx, constants.ProviderOpenAI)
 	if err != nil {
 		t.Fatalf("failed to create provider: %v", err)
 	}
@@ -65,7 +65,7 @@ func TestOllamaGenerate(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	provider, err := New(ctx, constants.ProviderOllama, "configs/config.yaml")
+	provider, err := New(ctx, constants.ProviderOllama)
 	if err != nil {
 		t.Fatalf("failed to create provider: %v", err)
 	}
@@ -123,7 +123,7 @@ func TestComplexNestedTemplate(t *testing.T) {
 
 func TestNewEmbeddingsWithoutDocuments(t *testing.T) {
 	ctx := context.Background()
-	provider, err := NewEmbeddings(ctx, constants.ProviderOllama, "configs/config.yaml")
+	provider, err := NewEmbeddings(ctx, constants.ProviderOllama)
 	if err != nil {
 		t.Fatalf("failed to create embeddings provider: %v", err)
 	}
@@ -146,7 +146,7 @@ func TestNewEmbeddingsWithoutDocuments(t *testing.T) {
 
 func TestNewEmbeddingsWithDocuments(t *testing.T) {
 	ctx := context.Background()
-	provider, err := NewEmbeddings(ctx, constants.ProviderOllama, "configs/config.yaml")
+	provider, err := NewEmbeddings(ctx, constants.ProviderOllama)
 	if err != nil {
 		t.Fatalf("failed to create embeddings provider: %v", err)
 	}
@@ -173,7 +173,7 @@ func TestNewEmbeddingsWithDocuments(t *testing.T) {
 
 func TestNewEmbeddingsUnsupportedProvider(t *testing.T) {
 	ctx := context.Background()
-	provider, err := NewEmbeddings(ctx, constants.ProviderClaude, "configs/config.yaml")
+	provider, err := NewEmbeddings(ctx, constants.ProviderClaude)
 	if err == nil {
 		_ = provider.Close()
 		t.Fatal("expected error for unsupported embeddings provider")

@@ -19,9 +19,8 @@ import (
 
 func main() {
 	ctx := context.Background()
-	if err := initializers.Init(ctx, config.DefaultConfigPath); err != nil {
-		log.Fatal("failed to initialize application", "error", err)
-	}
+	
+	initializers.Init(ctx, config.DefaultConfigPath)
 
 	providerName := config.GetString(internalConstants.ConfigLLMProvider)
 	if providerName == "" {

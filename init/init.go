@@ -8,13 +8,12 @@ import (
 	"github.com/singhJasvinder101/langchainai-go/pkg/log"
 )
 
-func Init(ctx context.Context, configSrc string) error {
+func Init(ctx context.Context, configSrc string) {
 	log.Init(log.Options{Level: "info", Format: "json"})
 
 	log.WithContext(ctx).Info("initializing config")
 	config.MustInit(configSrc)
 	log.WithContext(ctx).Info("config initialization complete")
-
 
 	log.WithContext(ctx).Info("reconfiguring log")
 	log.Reconfigure(log.Options{
@@ -27,5 +26,4 @@ func Init(ctx context.Context, configSrc string) error {
 	providers.NewProviderFactory(ctx)
 	log.WithContext(ctx).Info("provider factory initialization complete")
 
-	return nil
 }
