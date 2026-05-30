@@ -1,4 +1,4 @@
-package langchainaiGo
+package agenticgo
 
 import (
 	"context"
@@ -6,16 +6,16 @@ import (
 	"strings"
 	"testing"
 
-	ollamaEmbedder "github.com/singhJasvinder101/langchainai-go/embedder/ollama"
-	geminiEmbedder "github.com/singhJasvinder101/langchainai-go/embedder/gemini"
-	"github.com/singhJasvinder101/langchainai-go/init/config"
-	"github.com/singhJasvinder101/langchainai-go/llm/gemini"
-	ollamallm "github.com/singhJasvinder101/langchainai-go/llm/ollama"
-	openaillm "github.com/singhJasvinder101/langchainai-go/llm/openai"
-	"github.com/singhJasvinder101/langchainai-go/template"
-	"github.com/singhJasvinder101/langchainai-go/vectorstore"
-	"github.com/singhJasvinder101/langchainai-go/vectorstore/chroma"
-	"github.com/singhJasvinder101/langchainai-go/vectorstore/memory"
+	geminiEmbedder "github.com/singhJasvinder101/agentic-go/embedder/gemini"
+	ollamaEmbedder "github.com/singhJasvinder101/agentic-go/embedder/ollama"
+	"github.com/singhJasvinder101/agentic-go/init/config"
+	"github.com/singhJasvinder101/agentic-go/llm/gemini"
+	ollamallm "github.com/singhJasvinder101/agentic-go/llm/ollama"
+	openaillm "github.com/singhJasvinder101/agentic-go/llm/openai"
+	"github.com/singhJasvinder101/agentic-go/template"
+	"github.com/singhJasvinder101/agentic-go/vectorstore"
+	"github.com/singhJasvinder101/agentic-go/vectorstore/chroma"
+	"github.com/singhJasvinder101/agentic-go/vectorstore/memory"
 )
 
 func TestMain(m *testing.M) {

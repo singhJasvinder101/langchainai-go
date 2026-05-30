@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/sashabaranov/go-openai"
-	"github.com/singhJasvinder101/langchainai-go/embedder"
-	"github.com/singhJasvinder101/langchainai-go/init/config"
-	"github.com/singhJasvinder101/langchainai-go/internal/constants"
+	"github.com/singhJasvinder101/agentic-go/embedder"
+	"github.com/singhJasvinder101/agentic-go/init/config"
+	"github.com/singhJasvinder101/agentic-go/internal/constants"
 )
 
 type Embedder struct {

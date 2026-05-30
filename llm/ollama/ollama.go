@@ -6,10 +6,10 @@ import (
 	"strings"
 
 	"github.com/ollama/ollama/api"
-	"github.com/singhJasvinder101/langchainai-go/init/config"
-	"github.com/singhJasvinder101/langchainai-go/internal/constants"
-	"github.com/singhJasvinder101/langchainai-go/llm"
-	"github.com/singhJasvinder101/langchainai-go/pkg/log"
+	"github.com/singhJasvinder101/agentic-go/init/config"
+	"github.com/singhJasvinder101/agentic-go/internal/constants"
+	"github.com/singhJasvinder101/agentic-go/llm"
+	"github.com/singhJasvinder101/agentic-go/pkg/log"
 )
 
 type OllamaProvider struct {

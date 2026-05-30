@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/singhJasvinder101/langchainai-go/vectorstore"
-	"github.com/singhJasvinder101/langchainai-go/vectorstore/memory"
+	"github.com/singhJasvinder101/agentic-go/vectorstore"
+	"github.com/singhJasvinder101/agentic-go/vectorstore/memory"
 )
 
 type mockEmbedder struct {

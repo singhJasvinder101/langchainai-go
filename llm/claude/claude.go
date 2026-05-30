@@ -6,9 +6,9 @@ import (
 
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/singhJasvinder101/langchainai-go/init/config"
-	"github.com/singhJasvinder101/langchainai-go/llm"
-	"github.com/singhJasvinder101/langchainai-go/pkg/log"
+	"github.com/singhJasvinder101/agentic-go/init/config"
+	"github.com/singhJasvinder101/agentic-go/llm"
+	"github.com/singhJasvinder101/agentic-go/pkg/log"
 )
 
 type ClaudeProvider struct {

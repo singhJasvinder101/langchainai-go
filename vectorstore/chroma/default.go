@@ -3,7 +3,7 @@ package chroma
 import (
 	"context"
 
-	"github.com/singhJasvinder101/langchainai-go/embedder/gemini"
+	"github.com/singhJasvinder101/agentic-go/embedder/gemini"
 )
 
 func DefaultEmbeddingFunction() (ChromaEmbedderAdapterFunction, error) {

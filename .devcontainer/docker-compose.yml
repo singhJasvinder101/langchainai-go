@@ -1,0 +1,31 @@
+
+services:
+  go-dev:
+    image: golang:1.23-alpine
+    volumes:
+      - ..:/workspace:cached
+    command: sleep infinity
+    network_mode: service:chroma 
+
+  chroma:
+    image: chromadb/chroma:latest
+    ports:
+      - "8000:8000"
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    volumes:
+      - chroma-testing-data:/chroma/chroma # Persists your test vectors
+
+  chroma-dashboard:
+    image: fengzhichao/chromadb-admin:latest
+    ports:
+      - "3001:3001"
+    environment:
+      - CHROMA_SERVER_HOST=chroma 
+      - CHROMA_SERVER_PORT=8000
+    depends_on:
+      - chroma
+
+volumes:
+  chroma-testing-data:

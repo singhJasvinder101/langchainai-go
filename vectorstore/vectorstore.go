@@ -3,7 +3,7 @@ package vectorstore
 import (
 	"context"
 
-	"github.com/singhJasvinder101/langchainai-go/embedder"
+	"github.com/singhJasvinder101/agentic-go/embedder"
 )
 
 // document is a type of content stored and retrieved by a vector store

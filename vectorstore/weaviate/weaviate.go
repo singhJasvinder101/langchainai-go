@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/singhJasvinder101/langchainai-go/embedder"
-	"github.com/singhJasvinder101/langchainai-go/vectorstore"
-	"github.com/singhJasvinder101/langchainai-go/vectorstore/internal/storeutil"
+	"github.com/singhJasvinder101/agentic-go/embedder"
+	"github.com/singhJasvinder101/agentic-go/vectorstore"
+	"github.com/singhJasvinder101/agentic-go/vectorstore/internal/storeutil"
 	"github.com/weaviate/weaviate-go-client/v5/weaviate"
 	"github.com/weaviate/weaviate-go-client/v5/weaviate/graphql"
 	"github.com/weaviate/weaviate/entities/models"

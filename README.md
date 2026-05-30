@@ -1,6 +1,6 @@
-# langchainai-go
+# agentic-go
 
-`langchainai-go` is a Go library for working with LLM providers, text embedders, and vector stores. LLM generation, embeddings, and retrieval are kept in separate packages so you import and initialize only what you need—no central provider factory.
+`agentic-go` is a Go library for working with LLM providers, text embedders, and vector stores. LLM generation, embeddings, and retrieval are kept in separate packages so you import and initialize only what you need—no central provider factory.
 
 ## Features
 
@@ -14,7 +14,7 @@
 ## Installation
 
 ```bash
-go get github.com/singhJasvinder101/langchainai-go
+go get github.com/singhJasvinder101/agentic-go
 ```
 
 Vector store backends pull in their own SDK dependencies when you import them (for example `vectorstore/chroma` adds `chroma-go`).
@@ -24,7 +24,7 @@ Vector store backends pull in their own SDK dependencies when you import them (f
 By default the library reads `configs/config.yaml`. Load it once at startup:
 
 ```go
-import initializers "github.com/singhJasvinder101/langchainai-go/init"
+import initializers "github.com/singhJasvinder101/agentic-go/init"
 
 initializers.Init(ctx, "path/to/config.yaml")
 // or
@@ -73,8 +73,8 @@ import (
 	"fmt"
 	"log"
 
-	initializers "github.com/singhJasvinder101/langchainai-go/init"
-	"github.com/singhJasvinder101/langchainai-go/llm/gemini"
+	initializers "github.com/singhJasvinder101/agentic-go/init"
+	"github.com/singhJasvinder101/agentic-go/llm/gemini"
 )
 
 func main() {
@@ -129,9 +129,9 @@ Embeddings are separate from LLM providers. Use `embedder/<provider>` packages:
 
 ```go
 import (
-	geminiembedder "github.com/singhJasvinder101/langchainai-go/embedder/gemini"
-	openaiembedder "github.com/singhJasvinder101/langchainai-go/embedder/openai"
-	ollamaembedder "github.com/singhJasvinder101/langchainai-go/embedder/ollama"
+	geminiembedder "github.com/singhJasvinder101/agentic-go/embedder/gemini"
+	openaiembedder "github.com/singhJasvinder101/agentic-go/embedder/openai"
+	ollamaembedder "github.com/singhJasvinder101/agentic-go/embedder/ollama"
 )
 
 emb, err := geminiembedder.New(ctx)
@@ -166,9 +166,9 @@ All stores implement `vectorstore.VectorStore` and take an `embedder.Embedder` a
 
 ```go
 import (
-	geminiembedder "github.com/singhJasvinder101/langchainai-go/embedder/gemini"
-	"github.com/singhJasvinder101/langchainai-go/vectorstore"
-	"github.com/singhJasvinder101/langchainai-go/vectorstore/memory"
+	geminiembedder "github.com/singhJasvinder101/agentic-go/embedder/gemini"
+	"github.com/singhJasvinder101/agentic-go/vectorstore"
+	"github.com/singhJasvinder101/agentic-go/vectorstore/memory"
 )
 
 emb, _ := geminiembedder.New(ctx)
@@ -195,9 +195,9 @@ Your embedder vectors are passed explicitly (`WithEmbeddings`); a small adapter 
 
 ```go
 import (
-	geminiembedder "github.com/singhJasvinder101/langchainai-go/embedder/gemini"
-	"github.com/singhJasvinder101/langchainai-go/vectorstore"
-	chromastore "github.com/singhJasvinder101/langchainai-go/vectorstore/chroma"
+	geminiembedder "github.com/singhJasvinder101/agentic-go/embedder/gemini"
+	"github.com/singhJasvinder101/agentic-go/vectorstore"
+	chromastore "github.com/singhJasvinder101/agentic-go/vectorstore/chroma"
 )
 
 emb, _ := geminiembedder.New(ctx)
@@ -222,7 +222,7 @@ Optional: set `Options.EmbeddingFunction` to a different embedder for Chroma col
 #### Qdrant example
 
 ```go
-import qdrantstore "github.com/singhJasvinder101/langchainai-go/vectorstore/qdrant"
+import qdrantstore "github.com/singhJasvinder101/agentic-go/vectorstore/qdrant"
 
 store, _ := qdrantstore.New(emb, qdrantstore.Options{
 	Collection:     "my-docs",
@@ -234,7 +234,7 @@ store, _ := qdrantstore.New(emb, qdrantstore.Options{
 #### Pinecone example
 
 ```go
-import pineconestore "github.com/singhJasvinder101/langchainai-go/vectorstore/pinecone"
+import pineconestore "github.com/singhJasvinder101/agentic-go/vectorstore/pinecone"
 
 store, _ := pineconestore.New(emb, pineconestore.Options{
 	APIKey:    os.Getenv("PINECONE_API_KEY"),
@@ -276,7 +276,7 @@ init/config/      # YAML configuration
 
 ## Example CLI
 
-A placeholder CLI lives at `cmd/ai-go` (not yet implemented).
+A placeholder CLI lives at `cmd/agentic-go` (not yet implemented).
 
 ## TODO
 

@@ -7,9 +7,9 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/singhJasvinder101/langchainai-go/embedder"
-	"github.com/singhJasvinder101/langchainai-go/vectorstore"
-	"github.com/singhJasvinder101/langchainai-go/vectorstore/internal/storeutil"
+	"github.com/singhJasvinder101/agentic-go/embedder"
+	"github.com/singhJasvinder101/agentic-go/vectorstore"
+	"github.com/singhJasvinder101/agentic-go/vectorstore/internal/storeutil"
 )
 
 type storedDocument struct {
