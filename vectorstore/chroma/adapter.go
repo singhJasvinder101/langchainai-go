@@ -4,7 +4,7 @@ import (
 	"context"
 
 	chromaembeddings "github.com/amikos-tech/chroma-go/pkg/embeddings"
-	"github.com/singhJasvinder101/langchainai-go/embedder"
+	"github.com/singhJasvinder101/agentic-go/embedder"
 )
 
 var _ chromaembeddings.EmbeddingFunction = ChromaEmbedderAdapterFunction{}

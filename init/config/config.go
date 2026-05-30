@@ -5,8 +5,8 @@ import (
 	"os"
 	"sync"
 
-	"github.com/singhJasvinder101/langchainai-go/pkg/log"
-	"github.com/singhJasvinder101/langchainai-go/internal/types"
+	"github.com/singhJasvinder101/agentic-go/internal/types"
+	"github.com/singhJasvinder101/agentic-go/pkg/log"
 	"gopkg.in/yaml.v3"
 )
 

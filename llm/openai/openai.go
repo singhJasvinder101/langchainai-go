@@ -7,8 +7,8 @@ import (
 	"io"
 
 	"github.com/sashabaranov/go-openai"
-	"github.com/singhJasvinder101/langchainai-go/init/config"
-	"github.com/singhJasvinder101/langchainai-go/llm"
+	"github.com/singhJasvinder101/agentic-go/init/config"
+	"github.com/singhJasvinder101/agentic-go/llm"
 )
 
 type OpenAIProvider struct {

@@ -1,0 +1,15 @@
+{
+  "name": "agentic-go Test Environment",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "go-dev",
+  "workspaceFolder": "/workspace",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go"
+      ]
+    }
+  },
+  "forwardPorts": [8000, 3001],
+  "postCreateCommand": "go mod tidy"
+}

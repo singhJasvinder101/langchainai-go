@@ -1,4 +1,4 @@
-module github.com/singhJasvinder101/langchainai-go
+module github.com/singhJasvinder101/agentic-go
 
 go 1.26.0
 

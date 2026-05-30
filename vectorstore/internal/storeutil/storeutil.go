@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/singhJasvinder101/langchainai-go/embedder"
-	"github.com/singhJasvinder101/langchainai-go/vectorstore"
+	"github.com/singhJasvinder101/agentic-go/embedder"
+	"github.com/singhJasvinder101/agentic-go/vectorstore"
 )
 
 const ContentPayloadKey = "content"

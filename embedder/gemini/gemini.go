@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/singhJasvinder101/langchainai-go/embedder"
-	"github.com/singhJasvinder101/langchainai-go/init/config"
-	"github.com/singhJasvinder101/langchainai-go/internal/constants"
-	"github.com/singhJasvinder101/langchainai-go/pkg/log"
+	"github.com/singhJasvinder101/agentic-go/embedder"
+	"github.com/singhJasvinder101/agentic-go/init/config"
+	"github.com/singhJasvinder101/agentic-go/internal/constants"
+	"github.com/singhJasvinder101/agentic-go/pkg/log"
 	"google.golang.org/genai"
 )
 

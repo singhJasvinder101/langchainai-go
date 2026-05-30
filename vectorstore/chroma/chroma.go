@@ -8,9 +8,9 @@ import (
 
 	chroma "github.com/amikos-tech/chroma-go/pkg/api/v2"
 	chromaembeddings "github.com/amikos-tech/chroma-go/pkg/embeddings"
-	"github.com/singhJasvinder101/langchainai-go/embedder"
-	"github.com/singhJasvinder101/langchainai-go/vectorstore"
-	"github.com/singhJasvinder101/langchainai-go/vectorstore/internal/storeutil"
+	"github.com/singhJasvinder101/agentic-go/embedder"
+	"github.com/singhJasvinder101/agentic-go/vectorstore"
+	"github.com/singhJasvinder101/agentic-go/vectorstore/internal/storeutil"
 )
 
 const (

@@ -3,8 +3,8 @@ package initializers
 import (
 	"context"
 
-	"github.com/singhJasvinder101/langchainai-go/init/config"
-	"github.com/singhJasvinder101/langchainai-go/pkg/log"
+	"github.com/singhJasvinder101/agentic-go/init/config"
+	"github.com/singhJasvinder101/agentic-go/pkg/log"
 )
 
 func Init(ctx context.Context, configSrc string) {
