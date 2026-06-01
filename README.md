@@ -74,6 +74,7 @@ import (
 	"log"
 
 	initializers "github.com/singhJasvinder101/agentic-go/init"
+	"github.com/singhJasvinder101/agentic-go/llm"
 	"github.com/singhJasvinder101/agentic-go/llm/gemini"
 )
 
@@ -86,32 +87,101 @@ func main() {
 		log.Fatal(err)
 	}
 
-	resp, err := provider.Generate(ctx, &gemini.GenerateRequest{
-		Prompt: "Hello, what is the capital of France?",
+	resp, err := provider.Generate(ctx, &llm.GenerateRequest{
+		Messages: []llm.Message{
+			llm.UserMessage(llm.TextPart("Hello, what is the capital of France?")),
+		},
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(resp.GetText())
+	fmt.Println(resp.Text())
 }
 ```
+
+### Role-based messages
+
+All LLM providers accept `llm.GenerateRequest` with a `Messages` slice. Each message has a `Role` (`system`, `user`, `assistant`) and one or more `ContentPart` blocks:
+
+```go
+import "github.com/singhJasvinder101/agentic-go/llm"
+
+resp, err := provider.Generate(ctx, &llm.GenerateRequest{
+	Messages: []llm.Message{
+		llm.SystemMessage(llm.TextPart("You are a concise assistant.")),
+		llm.UserMessage(llm.TextPart("What is the capital of France?")),
+	},
+})
+```
+
+**Content part types:** `TextPart`, `ImageURLPart`, `ImagePart` (raw bytes + MIME type), `FilePart` (documents; provider support varies). Multimodal example:
+
+```go
+llm.UserMessage(
+	llm.TextPart("Describe this image."),
+	llm.ImageURLPart("https://example.com/photo.jpg"),
+)
+```
+
+System messages map to provider-native fields where supported (Claude `System`, Gemini `SystemInstruction`). Ollama accepts text and raw image bytes on messages.
+
+### Message validation (LangChain-style)
+
+`Generate` and `GenerateStream` call `llm.PrepareRequest` automatically. That runs light checks (non-empty messages, valid roles, at least one part per message) and does **not** call `Validate()` on every part.
+
+Provider adapters (`toOpenAIMessages`, `toGeminiMessages`, etc.) return errors for unsupported multimodal content when converting to the API.
+
+**Optional strict validation** — call explicitly when accepting untrusted input (forms, external JSON, etc.):
+
+```go
+req := &llm.GenerateRequest{Messages: history}
+if err := req.Validate(); err != nil {
+	return err
+}
+resp, err := provider.Generate(ctx, req)
+```
+
+`Message.Validate()`, `ContentPart.Validate()`, and `GenerateRequest.Validate()` check roles, required fields, and part schemas (e.g. image MIME type and bytes). Messages built with `UserMessage`, `SystemMessage`, and `resp.AssistantMessage()` typically do not need this on every turn.
+
+You can also normalize input with `llm.ConvertToMessages(messages)` before building a request.
+
+### Responses
+
+`Generate` returns `*llm.GenerateResponse` with `Choices`, `Usage`, and optional `Raw` (provider-native). Each `Choice` has a full assistant `Message` with `ContentPart` slices:
+
+```go
+resp, _ := provider.Generate(ctx, req)
+
+fmt.Println(resp.Text())                    // first choice text
+choice := resp.FirstChoice()
+parts := choice.Parts()                     // multimodal parts
+history = append(history, resp.AssistantMessage())
+
+if native, ok := llm.RawAs[openai.ChatCompletionResponse](resp.Raw); ok {
+	_ = native
+}
+```
+
+`GenerateStream` yields `*llm.StreamResponse` chunks with `Choices[].Delta` (partial assistant message per event).
 
 ### Streaming
 
 ```go
 provider, _ := openai.New()
-responses, errs := provider.GenerateStream(ctx, &openai.GenerateRequest{
-	Prompt: "Write a short poem about Go.",
+responses, errs := provider.GenerateStream(ctx, &llm.GenerateRequest{
+	Messages: []llm.Message{
+		llm.UserMessage(llm.TextPart("Write a short poem about Go.")),
+	},
 })
 
 for responses != nil || errs != nil {
 	select {
-	case resp, ok := <-responses:
+	case chunk, ok := <-responses:
 		if !ok {
 			responses = nil
 		} else {
-			fmt.Print(resp.GetText())
+			fmt.Print(chunk.Text())
 		}
 	case err, ok := <-errs:
 		if !ok {
@@ -283,6 +353,11 @@ A placeholder CLI lives at `cmd/agentic-go` (not yet implemented).
 - [ ] Tools / agentic workflows
 - [ ] MCP support
 - [ ] Additional LLM and vector store backends
-- [ ] Role-based messaging
+- [x] Role-based messaging
 - [ ] Tool calling
 - [ ] Timeouts and resource limits
+
+
+## Why Go ?
+- you can use goroutines for concurrent chunking for rag applications
+- python, javascript languages are dyanmic type languages so go's status typing can beat

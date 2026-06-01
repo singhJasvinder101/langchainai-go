@@ -9,6 +9,7 @@ import (
 	geminiEmbedder "github.com/singhJasvinder101/agentic-go/embedder/gemini"
 	ollamaEmbedder "github.com/singhJasvinder101/agentic-go/embedder/ollama"
 	"github.com/singhJasvinder101/agentic-go/init/config"
+	"github.com/singhJasvinder101/agentic-go/llm"
 	"github.com/singhJasvinder101/agentic-go/llm/gemini"
 	ollamallm "github.com/singhJasvinder101/agentic-go/llm/ollama"
 	openaillm "github.com/singhJasvinder101/agentic-go/llm/openai"
@@ -35,11 +36,13 @@ func TestGeminiGenerate(t *testing.T) {
 		t.Fatalf("failed to create gemini provider: %v", err)
 	}
 
-	response, err := geminiProvider.Generate(ctx, &gemini.GenerateRequest{Prompt: "Hello, how are you?"})
+	response, err := geminiProvider.Generate(ctx, &llm.GenerateRequest{
+		Messages: []llm.Message{llm.UserMessage(llm.TextPart("Hello, how are you?"))},
+	})
 	if err != nil {
 		t.Fatalf("failed to generate response: %v", err)
 	}
-	t.Log(response.GetText())
+	t.Log(response.AssistantMessage())
 }
 
 func TestOpenAIGenerate(t *testing.T) {
@@ -53,11 +56,13 @@ func TestOpenAIGenerate(t *testing.T) {
 		t.Fatalf("failed to create provider: %v", err)
 	}
 
-	response, err := provider.Generate(ctx, &openaillm.GenerateRequest{Prompt: "Hello, how are you?"})
+	response, err := provider.Generate(ctx, &llm.GenerateRequest{
+		Messages: []llm.Message{llm.UserMessage(llm.TextPart("Hello, how are you?"))},
+	})
 	if err != nil {
 		t.Fatalf("failed to generate response: %v", err)
 	}
-	t.Log(response.GetText())
+	t.Log(response.AssistantMessage())
 }
 
 func TestOllamaGenerate(t *testing.T) {
@@ -71,14 +76,16 @@ func TestOllamaGenerate(t *testing.T) {
 		t.Fatalf("failed to create provider: %v", err)
 	}
 
-	response, err := provider.Generate(ctx, &ollamallm.GenerateRequest{Prompt: "Say hello in one short sentence."})
+	response, err := provider.Generate(ctx, &llm.GenerateRequest{
+		Messages: []llm.Message{llm.UserMessage(llm.TextPart("Say hello in one short sentence also give me some random image urls."))},
+	})
 	if err != nil {
 		t.Skipf("ollama generate failed (is ollama running?): %v", err)
 	}
-	if response.GetText() == "" {
+	if response.Text() == "" {
 		t.Fatal("expected non-empty response from ollama")
 	}
-	t.Log(response.GetText())
+	t.Log(response.AssistantMessage())
 }
 
 func TestTemplate(t *testing.T) {
@@ -220,4 +227,22 @@ func TestChromaVectorStoreWithEmbedder(t *testing.T) {
 		t.Fatal("expected at least one search result")
 	}
 	t.Log(results[0].Document.Content, results[0].Score)
+}
+
+func TestMessageHistory(t *testing.T) {
+	ctx := context.Background()
+	provider, err := ollamallm.New(ctx)
+	if err != nil {
+		t.Fatalf("failed to create provider: %v", err)
+	}
+
+	history := []llm.Message{
+		llm.SystemMessage(llm.TextPart("You are not a coding assistant so don't generate code, you are a helpful assistant.")),
+		llm.UserMessage(llm.TextPart("generate code for 2 sum")),
+	}
+	response, err := provider.Generate(ctx, &llm.GenerateRequest{Messages: history})
+	if err != nil {
+		t.Fatalf("failed to generate response: %v", err)
+	}
+	t.Log(response.AssistantMessage())
 }

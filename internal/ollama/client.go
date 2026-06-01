@@ -10,7 +10,7 @@ import (
 	"github.com/singhJasvinder101/agentic-go/internal/constants"
 )
 
-func newAPIClient() (*api.Client, error) {
+func NewAPIClient() (*api.Client, error) {
 	baseURL := config.GetString(constants.ConfigOllamaBaseURL)
 	if baseURL == "" {
 		return api.ClientFromEnvironment()

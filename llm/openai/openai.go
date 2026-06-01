@@ -3,7 +3,6 @@ package openai
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 
 	"github.com/sashabaranov/go-openai"
@@ -21,58 +20,50 @@ func New() (*OpenAIProvider, error) {
 	}, nil
 }
 
-func (p *OpenAIProvider) Generate(ctx context.Context, req llm.RequestInterface) (llm.ResponseInterface, error) {
-	openaiReq, ok := req.(*GenerateRequest)
-	if !ok || openaiReq == nil {
-		return nil, fmt.Errorf("openai: request must be a non-nil *openai.GenerateRequest")
+func (p *OpenAIProvider) Generate(ctx context.Context, req *llm.GenerateRequest) (*llm.GenerateResponse, error) {
+	messages, err := llm.PrepareRequest(req)
+	if err != nil {
+		return nil, err
 	}
-	if err := openaiReq.Validate(); err != nil {
+
+	apiMessages, err := toChatCompletionMessages(messages)
+	if err != nil {
 		return nil, err
 	}
 
 	response, err := p.Client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
-		Model: config.GetString("openai.model"),
-		Messages: []openai.ChatCompletionMessage{
-			{
-				Role:    openai.ChatMessageRoleUser,
-				Content: openaiReq.Prompt,
-			},
-		},
+		Model:    config.GetString("openai.model"),
+		Messages: apiMessages,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &GenerateResponse{ChatCompletionResponse: &response}, nil
+	return generateResponseFromChatCompletion(&response), nil
 }
 
-func (p *OpenAIProvider) GenerateStream(ctx context.Context, req llm.RequestInterface) (<-chan llm.ResponseInterface, <-chan error) {
-	responses := make(chan llm.ResponseInterface, 100)
+func (p *OpenAIProvider) GenerateStream(ctx context.Context, req *llm.GenerateRequest) (<-chan *llm.StreamResponse, <-chan error) {
+	responses := make(chan *llm.StreamResponse, 100)
 	errs := make(chan error, 1)
 
-	openaiReq, ok := req.(*GenerateRequest)
-	if !ok || openaiReq == nil {
-		errs <- fmt.Errorf("openai: request must be a non-nil *openai.GenerateRequest")
-		closeChannels(responses, errs)
-		return responses, errs
-	}
-	if err := openaiReq.Validate(); err != nil {
+	messages, err := llm.PrepareRequest(req)
+	if err != nil {
 		errs <- err
-		closeChannels(responses, errs)
 		return responses, errs
 	}
 
 	go func() {
 		defer closeChannels(responses, errs)
 
+		apiMessages, convertErr := toChatCompletionMessages(messages)
+		if convertErr != nil {
+			errs <- convertErr
+			return
+		}
+
 		stream, err := p.Client.CreateChatCompletionStream(ctx, openai.ChatCompletionRequest{
-			Model: config.GetString("openai.model"),
-			Messages: []openai.ChatCompletionMessage{
-				{
-					Role:    openai.ChatMessageRoleUser,
-					Content: openaiReq.Prompt,
-				},
-			},
-			Stream: true,
+			Model:    config.GetString("openai.model"),
+			Messages: apiMessages,
+			Stream:   true,
 		})
 		if err != nil {
 			errs <- err
@@ -90,14 +81,11 @@ func (p *OpenAIProvider) GenerateStream(ctx context.Context, req llm.RequestInte
 				return
 			}
 
-			text := ""
-			if len(response.Choices) > 0 {
-				text = response.Choices[0].Delta.Content
+			chunk := streamResponseFromChunk(&response)
+			if chunk == nil || len(chunk.Choices) == 0 {
+				continue
 			}
-			responses <- &StreamResponse{
-				Response: &response,
-				Text:     text,
-			}
+			responses <- chunk
 		}
 	}()
 
@@ -109,7 +97,7 @@ func (p *OpenAIProvider) Close() error {
 	return nil
 }
 
-func closeChannels(responses chan llm.ResponseInterface, errs chan error) {
+func closeChannels(responses chan *llm.StreamResponse, errs chan error) {
 	defer close(responses)
 	defer close(errs)
 }

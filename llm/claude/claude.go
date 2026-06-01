@@ -2,7 +2,6 @@ package claude
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/option"
@@ -23,54 +22,57 @@ func New() (*ClaudeProvider, error) {
 	}, nil
 }
 
-func (p *ClaudeProvider) Generate(ctx context.Context, req llm.RequestInterface) (llm.ResponseInterface, error) {
-	claudeReq, ok := req.(*GenerateRequest)
-	if !ok || claudeReq == nil {
-		return nil, fmt.Errorf("claude: request must be a non-nil *claude.GenerateRequest")
-	}
-	if err := claudeReq.Validate(); err != nil {
+func (p *ClaudeProvider) Generate(ctx context.Context, req *llm.GenerateRequest) (*llm.GenerateResponse, error) {
+	messages, err := llm.PrepareRequest(req)
+	if err != nil {
 		log.WithContext(ctx).Error("invalid claude generate request", "error", err)
 		return nil, err
 	}
 
-	message, err := p.Client.Messages.New(ctx, messageParams(claudeReq.Prompt))
+	params, err := messageParams(messages)
 	if err != nil {
 		return nil, err
 	}
-	return &GenerateResponse{Message: message}, nil
+
+	message, err := p.Client.Messages.New(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+	return generateResponseFromMessage(message), nil
 }
 
-func (p *ClaudeProvider) GenerateStream(ctx context.Context, req llm.RequestInterface) (<-chan llm.ResponseInterface, <-chan error) {
-	responses := make(chan llm.ResponseInterface, 100)
+func (p *ClaudeProvider) GenerateStream(ctx context.Context, req *llm.GenerateRequest) (<-chan *llm.StreamResponse, <-chan error) {
+	responses := make(chan *llm.StreamResponse, 100)
 	errs := make(chan error, 1)
 
-	claudeReq, ok := req.(*GenerateRequest)
-	if !ok || claudeReq == nil {
-		errs <- fmt.Errorf("claude: request must be a non-nil *claude.GenerateRequest")
-		closeChannels(responses, errs)
-		return responses, errs
-	}
-	if err := claudeReq.Validate(); err != nil {
+	messages, err := llm.PrepareRequest(req)
+	if err != nil {
 		errs <- err
-		closeChannels(responses, errs)
 		return responses, errs
 	}
 
 	go func() {
 		defer closeChannels(responses, errs)
 
-		stream := p.Client.Messages.NewStreaming(ctx, messageParams(claudeReq.Prompt))
+		params, buildErr := messageParams(messages)
+		if buildErr != nil {
+			errs <- buildErr
+			return
+		}
+
+		stream := p.Client.Messages.NewStreaming(ctx, params)
 		for stream.Next() {
 			event := stream.Current()
 			switch v := event.AsAny().(type) {
 			case anthropic.ContentBlockDeltaEvent:
 				switch delta := v.Delta.AsAny().(type) {
 				case anthropic.TextDelta:
-					if delta.Text != "" {
-						responses <- &StreamResponse{
-							Response: &event,
-							Text:     delta.Text,
-						}
+					if delta.Text == "" {
+						continue
+					}
+					chunk := streamResponseFromTextDelta(delta.Text, &event)
+					if chunk != nil {
+						responses <- chunk
 					}
 				}
 			}
@@ -84,26 +86,33 @@ func (p *ClaudeProvider) GenerateStream(ctx context.Context, req llm.RequestInte
 }
 
 func (p *ClaudeProvider) Close() error {
-	//TODO: Implement
+	// TODO: Implement
 	return nil
 }
 
-func messageParams(prompt string) anthropic.MessageNewParams {
+func messageParams(messages []llm.Message) (anthropic.MessageNewParams, error) {
 	maxTokens := config.GetInt("claude.max_tokens")
 	if maxTokens <= 0 {
 		maxTokens = 1024
 	}
 
-	return anthropic.MessageNewParams{
+	converted, err := toClaudeMessages(messages)
+	if err != nil {
+		return anthropic.MessageNewParams{}, err
+	}
+
+	params := anthropic.MessageNewParams{
 		Model:     anthropic.Model(config.GetString("claude.model")),
 		MaxTokens: int64(maxTokens),
-		Messages: []anthropic.MessageParam{
-			anthropic.NewUserMessage(anthropic.NewTextBlock(prompt)),
-		},
+		Messages:  converted.messages,
 	}
+	if len(converted.system) > 0 {
+		params.System = converted.system
+	}
+	return params, nil
 }
 
-func closeChannels(responses chan llm.ResponseInterface, errs chan error) {
+func closeChannels(responses chan *llm.StreamResponse, errs chan error) {
 	defer close(responses)
 	defer close(errs)
 }

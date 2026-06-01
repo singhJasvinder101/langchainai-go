@@ -9,6 +9,7 @@ import (
 	"github.com/singhJasvinder101/agentic-go/init/config"
 	"github.com/singhJasvinder101/agentic-go/internal/constants"
 	"github.com/singhJasvinder101/agentic-go/pkg/log"
+	ollamaclient "github.com/singhJasvinder101/agentic-go/internal/ollama"
 )
 
 type Embedder struct {
@@ -16,7 +17,7 @@ type Embedder struct {
 }
 
 func New(ctx context.Context) (embedder.Embedder, error) {
-	client, err := newAPIClient()
+	client, err := ollamaclient.NewAPIClient()
 	if err != nil {
 		log.WithContext(ctx).Error("failed to create ollama embedder client", "error", err)
 		return nil, err

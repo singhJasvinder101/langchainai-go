@@ -2,7 +2,6 @@ package gemini
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/singhJasvinder101/agentic-go/init/config"
 	"github.com/singhJasvinder101/agentic-go/llm"
@@ -25,55 +24,59 @@ func New(ctx context.Context) (*GeminiProvider, error) {
 	return &GeminiProvider{Client: client}, nil
 }
 
-func (p *GeminiProvider) Generate(ctx context.Context, req llm.RequestInterface) (llm.ResponseInterface, error) {
-	geminiReq, ok := req.(*GenerateRequest)
-	if !ok || geminiReq == nil {
-		return nil, fmt.Errorf("gemini: request must be a non-nil *gemini.GenerateRequest")
-	}
-	if err := geminiReq.Validate(); err != nil {
+func (p *GeminiProvider) Generate(ctx context.Context, req *llm.GenerateRequest) (*llm.GenerateResponse, error) {
+	messages, err := llm.PrepareRequest(req)
+	if err != nil {
 		log.WithContext(ctx).Error("invalid gemini generate request", "error", err)
 		return nil, err
 	}
 
+	converted, err := toGeminiMessages(messages)
+	if err != nil {
+		return nil, err
+	}
+
 	model := config.GetString("gemini.model")
-	contents := []Content{{Role: "user", Parts: []Part{{Text: geminiReq.Prompt}}}}
-	response, err := p.Client.Models.GenerateContent(ctx, model, contents, nil)
+	response, err := p.Client.Models.GenerateContent(ctx, model, converted.contents, converted.config())
 	if err != nil {
 		log.WithContext(ctx).Error("gemini generate content failed", "error", err, "model", model)
 		return nil, err
 	}
-	return &GenerateResponse{response}, nil
+	return generateResponseFromGenerateContent(response, model), nil
 }
 
-func (p *GeminiProvider) GenerateStream(ctx context.Context, req llm.RequestInterface) (<-chan llm.ResponseInterface, <-chan error) {
-	responses := make(chan llm.ResponseInterface, 100)
+func (p *GeminiProvider) GenerateStream(ctx context.Context, req *llm.GenerateRequest) (<-chan *llm.StreamResponse, <-chan error) {
+	responses := make(chan *llm.StreamResponse, 100)
 	errs := make(chan error, 1)
 
-	geminiReq, ok := req.(*GenerateRequest)
-	if !ok || geminiReq == nil {
-		errs <- fmt.Errorf("gemini: request must be a non-nil *gemini.GenerateRequest")
-		closeChannels(responses, errs)
-		return responses, errs
-	}
-	if err := geminiReq.Validate(); err != nil {
-		log.WithContext(ctx).Error("invalid gemini stream request", "error", err)
-		errs <- err
-		closeChannels(responses, errs)
+	messages, prepErr := llm.PrepareRequest(req)
+	if prepErr != nil {
+		log.WithContext(ctx).Error("invalid gemini stream request", "error", prepErr)
+		errs <- prepErr
 		return responses, errs
 	}
 
 	go func() {
 		defer closeChannels(responses, errs)
 
+		converted, convertErr := toGeminiMessages(messages)
+		if convertErr != nil {
+			errs <- convertErr
+			return
+		}
+
 		model := config.GetString("gemini.model")
-		contents := []Content{{Role: "user", Parts: []Part{{Text: geminiReq.Prompt}}}}
-		for response, err := range p.Client.Models.GenerateContentStream(ctx, model, contents, nil) {
+		for response, err := range p.Client.Models.GenerateContentStream(ctx, model, converted.contents, converted.config()) {
 			if err != nil {
 				log.WithContext(ctx).Error("gemini generate content stream failed", "error", err, "model", model)
 				errs <- err
 				return
 			}
-			responses <- &GenerateResponse{response}
+			chunk := streamResponseFromGenerateContent(response, model)
+			if chunk == nil || len(chunk.Choices) == 0 {
+				continue
+			}
+			responses <- chunk
 		}
 	}()
 
@@ -85,7 +88,7 @@ func (p *GeminiProvider) Close() error {
 	return nil
 }
 
-func closeChannels(responses chan llm.ResponseInterface, errs chan error) {
+func closeChannels(responses chan *llm.StreamResponse, errs chan error) {
 	defer close(responses)
 	defer close(errs)
 }
