@@ -31,10 +31,20 @@ func (p *OpenAIProvider) Generate(ctx context.Context, req *llm.GenerateRequest)
 		return nil, err
 	}
 
-	response, err := p.Client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
+	apiReq := openai.ChatCompletionRequest{
 		Model:    config.GetString("openai.model"),
 		Messages: apiMessages,
-	})
+	}
+	if len(req.Tools) > 0 {
+		tools, err := toOpenAITools(req.Tools)
+		if err != nil {
+			return nil, err
+		}
+		apiReq.Tools = tools
+		apiReq.ToolChoice = toOpenAIToolChoice(req.ToolChoice)
+	}
+
+	response, err := p.Client.CreateChatCompletion(ctx, apiReq)
 	if err != nil {
 		return nil, err
 	}
@@ -60,11 +70,22 @@ func (p *OpenAIProvider) GenerateStream(ctx context.Context, req *llm.GenerateRe
 			return
 		}
 
-		stream, err := p.Client.CreateChatCompletionStream(ctx, openai.ChatCompletionRequest{
+		streamReq := openai.ChatCompletionRequest{
 			Model:    config.GetString("openai.model"),
 			Messages: apiMessages,
 			Stream:   true,
-		})
+		}
+		if len(req.Tools) > 0 {
+			tools, toolErr := toOpenAITools(req.Tools)
+			if toolErr != nil {
+				errs <- toolErr
+				return
+			}
+			streamReq.Tools = tools
+			streamReq.ToolChoice = toOpenAIToolChoice(req.ToolChoice)
+		}
+
+		stream, err := p.Client.CreateChatCompletionStream(ctx, streamReq)
 		if err != nil {
 			errs <- err
 			return

@@ -10,20 +10,24 @@ import (
 type ContentPartType string
 
 const (
-	PartText     ContentPartType = "text"
-	PartImageURL ContentPartType = "image_url"
-	PartImage    ContentPartType = "image"
-	PartFile     ContentPartType = "file"
+	PartText       ContentPartType = "text"
+	PartImageURL   ContentPartType = "image_url"
+	PartImage      ContentPartType = "image"
+	PartFile       ContentPartType = "file"
+	PartToolCall   ContentPartType = "tool_call"
+	PartToolResult ContentPartType = "tool_result"
 )
 
-// ContentPart is one block of message content (text, image, file, etc.).
+// ContentPart is one block of message content (text, image, file, tool call, etc.).
 type ContentPart struct {
-	Type     ContentPartType
-	Text     string
-	URL      string
-	MIMEType string
-	Data     []byte
-	Name     string
+	Type       ContentPartType
+	Text       string
+	URL        string
+	MIMEType   string
+	Data       []byte
+	Name       string
+	ToolCallID string
+	ToolCall   *ToolCall
 }
 
 // Validate checks that required fields are set for the part type.
@@ -44,6 +48,18 @@ func (p ContentPart) Validate() error {
 		}
 		if p.MIMEType == "" {
 			return fmt.Errorf("%s mime type is required", p.Type)
+		}
+	case PartToolCall:
+		if p.ToolCall == nil {
+			return errors.New("tool call is required")
+		}
+		return p.ToolCall.Validate()
+	case PartToolResult:
+		if p.ToolCallID == "" {
+			return errors.New("tool call id is required")
+		}
+		if p.Name == "" {
+			return errors.New("tool name is required")
 		}
 	default:
 		return fmt.Errorf("unknown content part type %q", p.Type)
@@ -69,6 +85,22 @@ func ImagePart(mimeType string, data []byte) ContentPart {
 // FilePart returns a document or other file as raw bytes.
 func FilePart(mimeType, name string, data []byte) ContentPart {
 	return ContentPart{Type: PartFile, MIMEType: mimeType, Name: name, Data: data}
+}
+
+// ToolCallPart returns an assistant tool invocation block.
+func ToolCallPart(call ToolCall) ContentPart {
+	c := call
+	return ContentPart{Type: PartToolCall, ToolCall: &c, Name: call.Name}
+}
+
+// ToolResultPart returns a tool result block (use with RoleTool messages).
+func ToolResultPart(toolCallID, name, content string) ContentPart {
+	return ContentPart{
+		Type:       PartToolResult,
+		ToolCallID: toolCallID,
+		Name:       name,
+		Text:       content,
+	}
 }
 
 // JoinTextParts concatenates text parts; returns an error if a non-text part is present.

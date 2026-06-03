@@ -31,7 +31,7 @@ func (p *GeminiProvider) Generate(ctx context.Context, req *llm.GenerateRequest)
 		return nil, err
 	}
 
-	converted, err := toGeminiMessages(messages)
+	converted, err := toGeminiMessages(messages, req.Tools, req.ToolChoice)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (p *GeminiProvider) GenerateStream(ctx context.Context, req *llm.GenerateRe
 	go func() {
 		defer closeChannels(responses, errs)
 
-		converted, convertErr := toGeminiMessages(messages)
+		converted, convertErr := toGeminiMessages(messages, req.Tools, req.ToolChoice)
 		if convertErr != nil {
 			errs <- convertErr
 			return

@@ -102,7 +102,7 @@ func main() {
 
 ### Role-based messages
 
-All LLM providers accept `llm.GenerateRequest` with a `Messages` slice. Each message has a `Role` (`system`, `user`, `assistant`) and one or more `ContentPart` blocks:
+All LLM providers accept `llm.GenerateRequest` with a `Messages` slice. Each message has a `Role` (`system`, `user`, `assistant`, `tool`) and one or more `ContentPart` blocks:
 
 ```go
 import "github.com/singhJasvinder101/agentic-go/llm"
@@ -125,6 +125,48 @@ llm.UserMessage(
 ```
 
 System messages map to provider-native fields where supported (Claude `System`, Gemini `SystemInstruction`). Ollama accepts text and raw image bytes on messages.
+
+### Tool calling
+
+Register tools on `GenerateRequest` and read tool calls from the response:
+
+```go
+import "encoding/json"
+
+tools := []llm.Tool{
+	llm.NewTool("get_weather", "Get weather for a city",
+		json.RawMessage(`{"type":"object","properties":{"city":{"type":"string"}},"required":["city"]}`)),
+}
+
+resp, err := provider.Generate(ctx, &llm.GenerateRequest{
+	Messages: []llm.Message{
+		llm.UserMessage(llm.TextPart("What's the weather in Paris?")),
+	},
+	Tools: tools,
+})
+if err != nil {
+	log.Fatal(err)
+}
+
+for _, call := range resp.ToolCalls() {
+	// run your function, then continue the conversation:
+	result := `{"temp": 18, "unit": "C"}`
+	history := append(req.Messages,
+		llm.AssistantToolCallsMessage("", call),
+		llm.ToolMessage(call.ID, call.Name, result),
+	)
+	resp, err = provider.Generate(ctx, &llm.GenerateRequest{
+		Messages: history,
+		Tools:    tools,
+	})
+}
+```
+
+**Helpers:** `ToolCallPart`, `ToolResultPart`, `AssistantToolCallsMessage`, `ToolMessage`, `resp.ToolCalls()`, `choice.ToolCalls()`.
+
+**Tool choice:** set `ToolChoice` with `ToolChoiceAuto` (default), `ToolChoiceNone`, or `ToolChoiceRequired` (optionally `Name` to force a specific tool). Supported on OpenAI, Claude, Gemini, and Ollama (where the model supports tools).
+
+**History:** assistant turns with tool calls use `AssistantToolCallsMessage`; tool results use `ToolMessage` or `RoleTool` messages with `ToolResultPart`.
 
 ### Message validation (LangChain-style)
 
@@ -352,10 +394,13 @@ A placeholder CLI lives at `cmd/agentic-go` (not yet implemented).
 
 - [ ] Tools / agentic workflows
 - [ ] MCP support
-- [ ] Additional LLM and vector store backends
+- [x] Additional LLM and vector store backends
 - [x] Role-based messaging
-- [ ] Tool calling
+- [x] Tool calling
 - [ ] Timeouts and resource limits
+- [ ] RAG
+- [ ] Guardrails
+- [ ] Stream response abstraction (like stream.Next())
 
 
 ## Why Go ?

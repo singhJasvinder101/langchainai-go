@@ -13,13 +13,16 @@ const (
 	RoleSystem    Role = "system"
 	RoleUser      Role = "user"
 	RoleAssistant Role = "assistant"
+	RoleTool      Role = "tool"
 )
 
-var validRoles = []Role{RoleSystem, RoleUser, RoleAssistant}
+var validRoles = []Role{RoleSystem, RoleUser, RoleAssistant, RoleTool}
 
-// ChatRequest is the shared request shape for all LLM providers.
+// GenerateRequest is the shared request shape for all LLM providers.
 type GenerateRequest struct {
-	Messages []Message
+	Messages   []Message
+	Tools      []Tool
+	ToolChoice *ToolChoice
 }
 
 // Message is a single turn in a conversation with one or more content parts.
@@ -60,6 +63,12 @@ func (r *GenerateRequest) Validate() error {
 			return fmt.Errorf("message at index %d: %w", i, err)
 		}
 	}
+	if err := ValidateTools(r.Tools); err != nil {
+		return err
+	}
+	if r.ToolChoice != nil && r.ToolChoice.Mode == ToolChoiceRequired && r.ToolChoice.Name == "" && len(r.Tools) == 0 {
+		return errors.New("tools are required when tool choice is required")
+	}
 	return nil
 }
 
@@ -75,6 +84,23 @@ func SystemMessage(parts ...ContentPart) Message {
 
 // AssistantMessage builds an assistant message from content parts.
 func AssistantMessage(parts ...ContentPart) Message {
+	return message(RoleAssistant, parts...)
+}
+
+// ToolMessage builds a tool result message for conversation history.
+func ToolMessage(toolCallID, name, result string) Message {
+	return message(RoleTool, ToolResultPart(toolCallID, name, result))
+}
+
+// AssistantToolCallsMessage builds an assistant message with optional text and tool calls.
+func AssistantToolCallsMessage(text string, calls ...ToolCall) Message {
+	parts := make([]ContentPart, 0, 1+len(calls))
+	if text != "" {
+		parts = append(parts, TextPart(text))
+	}
+	for _, call := range calls {
+		parts = append(parts, ToolCallPart(call))
+	}
 	return message(RoleAssistant, parts...)
 }
 

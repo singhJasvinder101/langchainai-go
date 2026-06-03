@@ -1,19 +1,29 @@
 package ollama
 
 import (
+	"encoding/json"
+
 	"github.com/ollama/ollama/api"
 	"github.com/singhJasvinder101/agentic-go/llm"
 )
 
-func partsFromOllamaMessage(fullText string, msg api.Message) []llm.ContentPart {
-	parts := make([]llm.ContentPart, 0, 1+len(msg.Images))
+func partsFromOllamaMessage(msg api.Message) []llm.ContentPart {
+	parts := make([]llm.ContentPart, 0, 1+len(msg.ToolCalls)+len(msg.Images))
 
-	text := fullText
-	if text == "" {
-		text = msg.Content
+	if msg.Content != "" {
+		parts = append(parts, llm.TextPart(msg.Content))
 	}
-	if text != "" {
-		parts = append(parts, llm.TextPart(text))
+
+	for _, call := range msg.ToolCalls {
+		args, err := json.Marshal(call.Function.Arguments.ToMap())
+		if err != nil {
+			continue
+		}
+		parts = append(parts, llm.ToolCallPart(llm.ToolCall{
+			ID:        call.ID,
+			Name:      call.Function.Name,
+			Arguments: args,
+		}))
 	}
 
 	for _, img := range msg.Images {

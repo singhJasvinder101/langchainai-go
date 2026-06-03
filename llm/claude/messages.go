@@ -2,6 +2,7 @@ package claude
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -26,6 +27,12 @@ func toClaudeMessages(messages []llm.Message) (claudeMessages, error) {
 				return claudeMessages{}, fmt.Errorf("message at index %d: %w", i, err)
 			}
 			systemParts = append(systemParts, text)
+		case llm.RoleTool:
+			blocks, err := toClaudeBlocks(msg.Parts)
+			if err != nil {
+				return claudeMessages{}, fmt.Errorf("message at index %d: %w", i, err)
+			}
+			chat = append(chat, anthropic.NewUserMessage(blocks...))
 		case llm.RoleUser, llm.RoleAssistant:
 			blocks, err := toClaudeBlocks(msg.Parts)
 			if err != nil {
@@ -74,6 +81,25 @@ func toClaudeBlock(part llm.ContentPart) (anthropic.ContentBlockParamUnion, erro
 		return anthropic.NewImageBlock(anthropic.URLImageSourceParam{URL: part.URL}), nil
 	case llm.PartImage:
 		return anthropic.NewImageBlockBase64(part.MIMEType, base64.StdEncoding.EncodeToString(part.Data)), nil
+	case llm.PartToolCall:
+		if part.ToolCall == nil {
+			return anthropic.ContentBlockParamUnion{}, fmt.Errorf("tool call is required")
+		}
+		var input any
+		if len(part.ToolCall.Arguments) > 0 {
+			if err := json.Unmarshal(part.ToolCall.Arguments, &input); err != nil {
+				return anthropic.ContentBlockParamUnion{}, err
+			}
+		} else {
+			input = map[string]any{}
+		}
+		id := part.ToolCall.ID
+		if id == "" {
+			id = "toolu_" + part.ToolCall.Name
+		}
+		return anthropic.NewToolUseBlock(id, input, part.ToolCall.Name), nil
+	case llm.PartToolResult:
+		return anthropic.NewToolResultBlock(part.ToolCallID, part.Text, false), nil
 	case llm.PartFile:
 		switch part.MIMEType {
 		case "application/pdf":

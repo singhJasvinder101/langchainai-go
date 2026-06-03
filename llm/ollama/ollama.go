@@ -2,7 +2,6 @@ package ollama
 
 import (
 	"context"
-	"strings"
 
 	"github.com/ollama/ollama/api"
 	"github.com/singhJasvinder101/agentic-go/init/config"
@@ -37,14 +36,17 @@ func (p *OllamaProvider) Generate(ctx context.Context, req *llm.GenerateRequest)
 		return nil, err
 	}
 
+	tools, err := toOllamaTools(req.Tools)
+	if err != nil {
+		return nil, err
+	}
+
 	model := modelName()
 	stream := false
-	var fullText strings.Builder
 	var lastResp api.ChatResponse
 
-	err = p.Client.Chat(ctx, chatRequest(model, apiMessages, &stream), func(resp api.ChatResponse) error {
+	err = p.Client.Chat(ctx, chatRequest(model, apiMessages, &stream, tools), func(resp api.ChatResponse) error {
 		lastResp = resp
-		fullText.WriteString(resp.Message.Content)
 		return nil
 	})
 	if err != nil {
@@ -52,7 +54,7 @@ func (p *OllamaProvider) Generate(ctx context.Context, req *llm.GenerateRequest)
 		return nil, err
 	}
 
-	return generateResponseFromChat(fullText.String(), model, lastResp), nil
+	return generateResponseFromChat(model, lastResp), nil
 }
 
 func (p *OllamaProvider) GenerateStream(ctx context.Context, req *llm.GenerateRequest) (<-chan *llm.StreamResponse, <-chan error) {
@@ -78,7 +80,13 @@ func (p *OllamaProvider) GenerateStream(ctx context.Context, req *llm.GenerateRe
 		model := modelName()
 		stream := true
 
-		err := p.Client.Chat(ctx, chatRequest(model, apiMessages, &stream), func(resp api.ChatResponse) error {
+		tools, toolErr := toOllamaTools(req.Tools)
+		if toolErr != nil {
+			errs <- toolErr
+			return
+		}
+
+		err := p.Client.Chat(ctx, chatRequest(model, apiMessages, &stream, tools), func(resp api.ChatResponse) error {
 			chunk := streamResponseFromChat(resp, model)
 			if chunk == nil {
 				return nil
@@ -100,12 +108,16 @@ func (p *OllamaProvider) Close() error {
 	return nil
 }
 
-func chatRequest(model string, messages []api.Message, stream *bool) *api.ChatRequest {
-	return &api.ChatRequest{
+func chatRequest(model string, messages []api.Message, stream *bool, tools api.Tools) *api.ChatRequest {
+	req := &api.ChatRequest{
 		Model:    model,
 		Messages: messages,
 		Stream:   stream,
 	}
+	if len(tools) > 0 {
+		req.Tools = tools
+	}
+	return req
 }
 
 func modelName() string {

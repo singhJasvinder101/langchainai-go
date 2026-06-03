@@ -5,7 +5,7 @@ import (
 	"github.com/singhJasvinder101/agentic-go/llm"
 )
 
-func generateResponseFromChat(fullText string, model string, resp api.ChatResponse) *llm.GenerateResponse {
+func generateResponseFromChat(model string, resp api.ChatResponse) *llm.GenerateResponse {
 	reason := llm.FinishReasonStop
 	if resp.DoneReason != "" {
 		reason = llm.FinishReason(resp.DoneReason)
@@ -23,7 +23,7 @@ func generateResponseFromChat(fullText string, model string, resp api.ChatRespon
 	return &llm.GenerateResponse{
 		Model: model,
 		Choices: []llm.Choice{
-			llm.NewChoice(0, partsFromOllamaMessage(fullText, resp.Message), reason),
+			llm.NewChoice(0, partsFromOllamaMessage(resp.Message), reason),
 		},
 		Usage: usage,
 		Raw:   &resp,
@@ -31,7 +31,12 @@ func generateResponseFromChat(fullText string, model string, resp api.ChatRespon
 }
 
 func streamResponseFromChat(resp api.ChatResponse, model string) *llm.StreamResponse {
-	parts := partsFromStreamContent(resp.Message.Content)
+	var parts []llm.ContentPart
+	if len(resp.Message.ToolCalls) > 0 {
+		parts = partsFromOllamaMessage(resp.Message)
+	} else {
+		parts = partsFromStreamContent(resp.Message.Content)
+	}
 	if len(parts) == 0 {
 		return nil
 	}

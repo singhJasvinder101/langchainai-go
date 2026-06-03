@@ -83,6 +83,19 @@ func (c Choice) Parts() []ContentPart {
 	return c.Message.Parts
 }
 
+// ToolCalls returns tool invocations from the choice message.
+func (c Choice) ToolCalls() []ToolCall {
+	return ToolCalls(c.Message.Parts)
+}
+
+// ToolCalls returns tool invocations from the first choice.
+func (r *GenerateResponse) ToolCalls() []ToolCall {
+	if fc := r.FirstChoice(); fc != nil {
+		return fc.ToolCalls()
+	}
+	return nil
+}
+
 // Text returns concatenated text from the stream delta parts.
 func (s StreamChoice) Text() string {
 	return TextFromParts(s.Delta.Parts)

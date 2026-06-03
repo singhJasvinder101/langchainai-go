@@ -29,7 +29,7 @@ func (p *ClaudeProvider) Generate(ctx context.Context, req *llm.GenerateRequest)
 		return nil, err
 	}
 
-	params, err := messageParams(messages)
+	params, err := messageParams(req, messages)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func (p *ClaudeProvider) GenerateStream(ctx context.Context, req *llm.GenerateRe
 	go func() {
 		defer closeChannels(responses, errs)
 
-		params, buildErr := messageParams(messages)
+		params, buildErr := messageParams(req, messages)
 		if buildErr != nil {
 			errs <- buildErr
 			return
@@ -90,7 +90,7 @@ func (p *ClaudeProvider) Close() error {
 	return nil
 }
 
-func messageParams(messages []llm.Message) (anthropic.MessageNewParams, error) {
+func messageParams(req *llm.GenerateRequest, messages []llm.Message) (anthropic.MessageNewParams, error) {
 	maxTokens := config.GetInt("claude.max_tokens")
 	if maxTokens <= 0 {
 		maxTokens = 1024
@@ -108,6 +108,14 @@ func messageParams(messages []llm.Message) (anthropic.MessageNewParams, error) {
 	}
 	if len(converted.system) > 0 {
 		params.System = converted.system
+	}
+	if len(req.Tools) > 0 {
+		tools, err := toClaudeTools(req.Tools)
+		if err != nil {
+			return anthropic.MessageNewParams{}, err
+		}
+		params.Tools = tools
+		params.ToolChoice = toClaudeToolChoice(req.ToolChoice)
 	}
 	return params, nil
 }

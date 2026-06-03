@@ -1,6 +1,8 @@
 package claude
 
 import (
+	"encoding/json"
+
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/singhJasvinder101/agentic-go/llm"
 )
@@ -35,6 +37,12 @@ func partFromContentBlock(block anthropic.ContentBlockUnion) (llm.ContentPart, b
 			return llm.ContentPart{}, false
 		}
 		return llm.TextPart(v.Thinking), true
+	case anthropic.ToolUseBlock:
+		return llm.ToolCallPart(llm.ToolCall{
+			ID:        v.ID,
+			Name:      v.Name,
+			Arguments: json.RawMessage(v.Input),
+		}), true
 	default:
 		return llm.ContentPart{}, false
 	}

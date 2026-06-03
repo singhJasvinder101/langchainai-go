@@ -36,7 +36,7 @@ func checkMessageLight(msg Message) error {
 
 func isValidRole(role Role) bool {
 	switch role {
-	case RoleSystem, RoleUser, RoleAssistant:
+	case RoleSystem, RoleUser, RoleAssistant, RoleTool:
 		return true
 	default:
 		return false

@@ -15,7 +15,7 @@ func generateResponseFromChatCompletion(response *openai.ChatCompletionResponse)
 		choices = append(choices, llm.NewChoice(
 			c.Index,
 			partsFromChatMessage(c.Message),
-			llm.FinishReason(c.FinishReason),
+			finishReasonFromOpenAI(c.FinishReason),
 		))
 	}
 
@@ -49,7 +49,7 @@ func streamResponseFromChunk(response *openai.ChatCompletionStreamResponse) *llm
 		choices = append(choices, llm.NewStreamChoice(
 			c.Index,
 			partsFromStreamDelta(c.Delta),
-			llm.FinishReason(c.FinishReason),
+			finishReasonFromOpenAI(c.FinishReason),
 		))
 	}
 

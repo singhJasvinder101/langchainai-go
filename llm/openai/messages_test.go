@@ -25,10 +25,10 @@ func TestToChatCompletionMessages(t *testing.T) {
 }
 
 func TestToChatCompletionMessageMultimodal(t *testing.T) {
-	apiMsg, err := toChatCompletionMessage(openaisdk.ChatMessageRoleUser, []llm.ContentPart{
+	apiMsg, err := toChatCompletionMessage(llm.UserMessage(
 		llm.TextPart("describe this"),
 		llm.ImageURLPart("https://example.com/a.png"),
-	})
+	))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

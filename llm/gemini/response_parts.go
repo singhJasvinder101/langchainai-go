@@ -1,6 +1,7 @@
 package gemini
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/singhJasvinder101/agentic-go/llm"
@@ -50,6 +51,17 @@ func partFromGenaiPart(part *genai.Part) (llm.ContentPart, error) {
 			URL:      part.FileData.FileURI,
 			MIMEType: mime,
 		}, nil
+	}
+	if part.FunctionCall != nil {
+		args, err := json.Marshal(part.FunctionCall.Args)
+		if err != nil {
+			return llm.ContentPart{}, err
+		}
+		return llm.ToolCallPart(llm.ToolCall{
+			ID:        part.FunctionCall.ID,
+			Name:      part.FunctionCall.Name,
+			Arguments: args,
+		}), nil
 	}
 	return llm.ContentPart{}, fmt.Errorf("unsupported genai part")
 }
