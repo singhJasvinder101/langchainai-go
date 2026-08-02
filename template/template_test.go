@@ -2,6 +2,8 @@ package template
 
 import (
 	"errors"
+	"fmt"
+	"sync"
 	"testing"
 )
 
@@ -76,5 +78,91 @@ func TestRegistryReturnsTemplateNotFound(t *testing.T) {
 	_, err := registry.GetTemplate("missing")
 	if !errors.Is(err, ErrTemplateNotFound) {
 		t.Fatalf("expected ErrTemplateNotFound, got %v", err)
+	}
+}
+
+func TestRenderNativeWithoutRegistry(t *testing.T) {
+	got, err := Render(FormatterNative, "Hello {{.Name}}", map[string]any{"Name": "Ada"})
+	if err != nil {
+		t.Fatalf("render: %v", err)
+	}
+	if got != "Hello Ada" {
+		t.Fatalf("expected %q, got %q", "Hello Ada", got)
+	}
+}
+
+func TestRenderJinjaWithoutRegistry(t *testing.T) {
+	got, err := Render(FormatterJinja, "Hello {{ name }}", map[string]any{"name": "Ada"})
+	if err != nil {
+		t.Fatalf("render: %v", err)
+	}
+	if got != "Hello Ada" {
+		t.Fatalf("expected %q, got %q", "Hello Ada", got)
+	}
+}
+
+func TestRenderDefaultsToNativeWhenEngineOmitted(t *testing.T) {
+	got, err := Render("", "Hello {{.Name}}", map[string]any{"Name": "Ada"})
+	if err != nil {
+		t.Fatalf("render: %v", err)
+	}
+	if got != "Hello Ada" {
+		t.Fatalf("expected %q, got %q", "Hello Ada", got)
+	}
+}
+
+func TestRenderRejectsUnknownEngine(t *testing.T) {
+	_, err := Render("unknown", "Hello", nil)
+	if !errors.Is(err, ErrFormatterNotFound) {
+		t.Fatalf("expected ErrFormatterNotFound, got %v", err)
+	}
+}
+
+func TestMustRegisterTemplatePanicsOnError(t *testing.T) {
+	defer func() {
+		if recover() == nil {
+			t.Fatal("expected panic for an invalid template")
+		}
+	}()
+	NewRegistry().MustRegisterTemplate("bad", "unknown-engine", "Hello")
+}
+
+func TestMustRegisterTemplateSucceeds(t *testing.T) {
+	registry := NewRegistry()
+	registry.MustRegisterTemplate("greeting", FormatterNative, "Hello {{.Name}}")
+
+	got, err := registry.Format("greeting", map[string]any{"Name": "Ada"})
+	if err != nil {
+		t.Fatalf("format template: %v", err)
+	}
+	if got != "Hello Ada" {
+		t.Fatalf("expected %q, got %q", "Hello Ada", got)
+	}
+}
+
+// TestRegistryConcurrentRegistration guards against a regression of the race
+// where RegisterTemplate checked r.templates for an existing key before
+// acquiring r.mu. Run with -race to verify.
+func TestRegistryConcurrentRegistration(t *testing.T) {
+	registry := NewRegistry()
+
+	var wg sync.WaitGroup
+	for i := 0; i < 50; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			key := fmt.Sprintf("key-%d", i)
+			if err := registry.RegisterTemplate(key, FormatterNative, "Hello {{.Name}}"); err != nil {
+				t.Errorf("register template %q: %v", key, err)
+			}
+		}(i)
+	}
+	wg.Wait()
+
+	for i := 0; i < 50; i++ {
+		key := fmt.Sprintf("key-%d", i)
+		if _, err := registry.GetTemplate(key); err != nil {
+			t.Fatalf("expected template %q to be registered: %v", key, err)
+		}
 	}
 }

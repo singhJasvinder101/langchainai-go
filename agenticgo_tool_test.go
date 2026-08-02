@@ -18,7 +18,7 @@ type llmGenerator interface {
 	Generate(ctx context.Context, req *llm.GenerateRequest) (*llm.GenerateResponse, error)
 }
 
-//json schema object + properties + required when you care about shape.
+// json schema object + properties + required when you care about shape.
 var weatherToolSchema = json.RawMessage(`{
 	"type": "object",
 	"properties": {
@@ -121,8 +121,6 @@ func runWeatherToolCalling(t *testing.T, provider string, gen llmGenerator) {
 		)),
 	}
 
-	fmt.Println(tools[0].Parameters)
-
 	first, err := gen.Generate(ctx, &llm.GenerateRequest{
 		Messages:   messages,
 		Tools:      tools,
@@ -145,8 +143,6 @@ func runWeatherToolCalling(t *testing.T, provider string, gen llmGenerator) {
 	}
 
 	t.Logf("%s first turn tool calls: %+v", provider, calls)
-
-	fmt.Println(calls[0].ArgumentsString())
 
 	messages = append(messages, llm.AssistantToolCallsMessage(first.Text(), calls...))
 	for _, call := range calls {

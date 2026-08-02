@@ -1,0 +1,5 @@
+.cursor/
+configs/
+.code-review-graph/
+.ignore
+map_author.sh

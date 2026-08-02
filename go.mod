@@ -6,6 +6,7 @@ require (
 	github.com/amikos-tech/chroma-go v0.3.5
 	github.com/anthropics/anthropic-sdk-go v1.46.0
 	github.com/google/uuid v1.6.0
+	github.com/invopop/jsonschema v0.13.0
 	github.com/nikolalohinski/gonja/v2 v2.8.0
 	github.com/ollama/ollama v0.24.0
 	github.com/pinecone-io/go-pinecone/v5 v5.4.1
@@ -63,7 +64,6 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.3.16 // indirect
 	github.com/googleapis/gax-go/v2 v2.22.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
-	github.com/invopop/jsonschema v0.13.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
