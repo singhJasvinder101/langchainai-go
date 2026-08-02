@@ -4,15 +4,38 @@
 
 ## Defining a tool
 
-A tool pairs an `llm.Tool` definition (name, description, JSON schema) with a `Handler` that actually runs it:
+A tool pairs an `llm.Tool` definition (name, description, JSON schema) with a handler that actually runs it. There are two ways to build one.
+
+### The Pydantic-model way: `NewTypedTool`
+
+Define the tool's arguments as a plain Go struct — the JSON schema is reflected from it automatically (via [`llm.SchemaFor`](llm.md#structured-output)), and the handler receives already-decoded arguments instead of raw JSON:
 
 ```go
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/singhJasvinder101/agentic-go/agent"
 )
+
+type WeatherArgs struct {
+	City string `json:"city" jsonschema_description:"City name, e.g. Paris"`
+}
+
+weatherTool := agent.NewTypedTool("get_weather", "Get current weather for a city",
+	func(ctx context.Context, args WeatherArgs) (string, error) {
+		// call your real weather API here
+		return fmt.Sprintf(`{"temp_c":18,"condition":"cloudy","city":%q}`, args.City), nil
+	})
+```
+
+No hand-written JSON schema string, and no `json.Unmarshal` inside the handler — the struct's `json` tags define field names/optionality (a field without `omitempty` is required), and `jsonschema_description` tags become each field's description for the model. This is the recommended default.
+
+### The manual way: `NewTool`
+
+When the schema needs to be built dynamically (e.g. loaded from configuration or another system) rather than known at compile time as a Go type, build it directly from a JSON schema string and a raw handler:
+
+```go
+import "encoding/json"
 
 weatherTool := agent.NewTool(
 	"get_weather",
@@ -25,13 +48,12 @@ weatherTool := agent.NewTool(
 		if err := json.Unmarshal(args, &in); err != nil {
 			return "", err
 		}
-		// call your real weather API here
 		return fmt.Sprintf(`{"temp_c":18,"condition":"cloudy","city":%q}`, in.City), nil
 	},
 )
 ```
 
-`Handler` is `func(ctx context.Context, args json.RawMessage) (string, error)` — the string return is sent back to the model verbatim as the tool result, so return whatever textual/JSON representation you want the model to see.
+Both return the same `agent.Tool`, so they're interchangeable in `agent.WithTools`. `Handler` (the raw form) is `func(ctx context.Context, args json.RawMessage) (string, error)`; either way, the string returned is sent back to the model verbatim as the tool result.
 
 ## Running an agent
 

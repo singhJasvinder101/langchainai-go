@@ -2,6 +2,7 @@ package llm
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -12,10 +13,23 @@ import (
 // to call with its final answer.
 const structuredToolName = "emit_result"
 
-var structuredReflector = &jsonschema.Reflector{
+var schemaReflector = &jsonschema.Reflector{
 	// A flat, inline schema (no $defs/$ref) is what providers expect for a
 	// tool's parameters.
 	DoNotReference: true,
+}
+
+// SchemaFor reflects a JSON schema from T's struct tags (Pydantic-style: a
+// Go struct is both the type and the schema, no hand-written JSON schema
+// string needed). Use `json` tags for field names/omitempty, and
+// `jsonschema_description` for a field's description. The schema is flat
+// (no $defs/$ref), matching what tool-calling APIs expect for parameters.
+//
+// GenerateStructured and agent.NewTypedTool both build on this.
+func SchemaFor[T any]() (json.RawMessage, error) {
+	schema := schemaReflector.Reflect(new(T))
+	schema.Version = "" // omit "$schema"; not expected in a tool's parameters
+	return schema.MarshalJSON()
 }
 
 // GenerateStructured asks the model to answer by calling a synthetic tool
@@ -32,9 +46,7 @@ func GenerateStructured[T any](ctx context.Context, provider Provider, req *Gene
 		return zero, errors.New("llm: request is required")
 	}
 
-	schema := structuredReflector.Reflect(new(T))
-	schema.Version = ""
-	schemaJSON, err := schema.MarshalJSON()
+	schemaJSON, err := SchemaFor[T]()
 	if err != nil {
 		return zero, fmt.Errorf("llm: build schema for structured output: %w", err)
 	}
